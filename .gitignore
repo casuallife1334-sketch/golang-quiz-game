@@ -2,3 +2,4 @@ logs/
 .gocache/
 frontend/dist/
 frontend/node_modules/
+.env

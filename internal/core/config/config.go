@@ -13,7 +13,7 @@ type Config struct {
 func New() Config {
 	addr := os.Getenv("ADDR")
 	if addr == "" {
-		addr = ":3001"
+		addr = "0.0.0.0:3001"
 	}
 
 	return Config{

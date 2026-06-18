@@ -6,7 +6,7 @@ services:
     container_name: quizgame-backend
     environment:
       - PROJECT_ROOT=/app
-      - ADDR=:3001
+      - ADDR=0.0.0.0:3001
       - WS_ALLOWED_ORIGINS=${WS_ALLOWED_ORIGINS}
       - LOGGER_LEVEL=${LOGGER_LEVEL}
       - LOGGER_FOLDER=/app/logs
