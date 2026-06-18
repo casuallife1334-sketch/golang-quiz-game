@@ -1,0 +1,32 @@
+services:
+  quizgame-backend:
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/cmd/quizgame/Dockerfile
+    container_name: quizgame-backend
+    environment:
+      - PROJECT_ROOT=/app
+      - ADDR=:3001
+      - WS_ALLOWED_ORIGINS=${WS_ALLOWED_ORIGINS}
+      - LOGGER_LEVEL=${LOGGER_LEVEL}
+      - LOGGER_FOLDER=/app/logs
+    volumes:
+      - ${PROJECT_ROOT}/logs:/app/logs
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  quizgame-frontend:
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/frontend/Dockerfile
+    container_name: quizgame-frontend
+    depends_on:
+      quizgame-backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT}:80"
+    restart: always

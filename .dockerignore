@@ -1,0 +1,7 @@
+.git
+.gocache
+logs
+frontend/dist
+frontend/node_modules
+tmp
+*.log
