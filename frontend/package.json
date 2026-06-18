@@ -1,0 +1,28 @@
+{
+  "name": "go-quiz-game-frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "node --test",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lucide-react": "^1.7.0",
+    "react": "^18.3.0",
+    "react-confetti": "^6.4.0",
+    "react-dom": "^18.3.0",
+    "react-router-dom": "^7.13.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^7.3.1"
+  },
+  "description": "React frontend for Go Quiz Game.",
+  "main": "eslint.config.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -2,13 +2,11 @@ package realtime
 
 import (
 	"sync"
-
-	"github.com/casuallife1334-sketch/go-quiz-game/internal/core/domain"
 )
 
 type Client interface {
 	ID() string
-	Send(event domain.Event)
+	Send(event Event)
 }
 
 type Hub struct {
@@ -31,22 +29,39 @@ func (h *Hub) AddClient(client Client) {
 	h.clients[client.ID()] = client
 }
 
-func (h *Hub) RemoveClient(clientID string) {
+func (h *Hub) RemoveClient(client Client) bool {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
+	clientID := client.ID()
+	if h.clients[clientID] != client {
+		return false
+	}
+
 	delete(h.clients, clientID)
 	for roomID, clients := range h.rooms {
-		delete(clients, clientID)
+		if clients[clientID] == client {
+			delete(clients, clientID)
+		}
 		if len(clients) == 0 {
 			delete(h.rooms, roomID)
 		}
 	}
+	return true
 }
 
 func (h *Hub) JoinRoom(roomID string, client Client) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+
+	for currentRoomID, clients := range h.rooms {
+		if clients[client.ID()] != nil {
+			delete(clients, client.ID())
+		}
+		if len(clients) == 0 {
+			delete(h.rooms, currentRoomID)
+		}
+	}
 
 	if h.rooms[roomID] == nil {
 		h.rooms[roomID] = map[string]Client{}
@@ -67,7 +82,7 @@ func (h *Hub) LeaveRoom(roomID string, clientID string) {
 	}
 }
 
-func (h *Hub) Send(clientID string, event domain.Event) {
+func (h *Hub) Send(clientID string, event Event) {
 	h.mu.RLock()
 	client := h.clients[clientID]
 	h.mu.RUnlock()
@@ -77,7 +92,7 @@ func (h *Hub) Send(clientID string, event domain.Event) {
 	}
 }
 
-func (h *Hub) Broadcast(roomID string, event domain.Event) {
+func (h *Hub) Broadcast(roomID string, event Event) {
 	h.mu.RLock()
 	clients := make([]Client, 0, len(h.rooms[roomID]))
 	for _, client := range h.rooms[roomID] {
@@ -90,7 +105,7 @@ func (h *Hub) Broadcast(roomID string, event domain.Event) {
 	}
 }
 
-func (h *Hub) BroadcastExcept(roomID string, exceptClientID string, event domain.Event) {
+func (h *Hub) BroadcastExcept(roomID string, exceptClientID string, event Event) {
 	h.mu.RLock()
 	clients := make([]Client, 0, len(h.rooms[roomID]))
 	for id, client := range h.rooms[roomID] {

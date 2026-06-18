@@ -1,0 +1,123 @@
+/* Player List - Minimalist Gaming Design */
+
+.player-list {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+}
+
+.player-list h3 {
+  margin: 0 0 14px 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.players-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.player-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+.player-item.active {
+  border-color: var(--accent);
+}
+
+.player-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.player-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.player-score {
+  font-size: 1.2rem;
+  font-weight: 600;
+  min-width: 70px;
+  text-align: right;
+  color: var(--accent);
+}
+
+.player-score.positive {
+  color: var(--success);
+}
+
+.player-score.negative {
+  color: var(--danger);
+}
+
+.score-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.score-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: var(--transition);
+}
+
+.score-btn.plus {
+  background: var(--success);
+}
+
+.score-btn.plus:hover {
+  transform: scale(1.1);
+}
+
+.score-btn.minus {
+  background: var(--danger);
+}
+
+.score-btn.minus:hover {
+  transform: scale(1.1);
+}
+
+.score-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 600px) {
+  .player-item {
+    padding: 8px 12px;
+  }
+  
+  .player-name {
+    font-size: 0.85rem;
+  }
+  
+  .player-score {
+    font-size: 1.05rem;
+  }
+}

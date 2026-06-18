@@ -1,0 +1,27 @@
+/* Training Fullscreen Replace Styles */
+.training-fullscreen-replace {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  background: var(--bg-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.training-fullscreen-replace .slideshow-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+}
+
+.sidebar {
+  z-index: 9999 !important; /* Sidebar behind fullscreen */
+}
+
+.players-panel {
+  z-index: 9998 !important; /* Players panel behind fullscreen */
+}

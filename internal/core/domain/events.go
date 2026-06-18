@@ -1,10 +1,5 @@
 package domain
 
-type Event struct {
-	Type    string      `json:"type"`
-	Payload interface{} `json:"payload,omitempty"`
-}
-
 type GameStatePayload struct {
 	Game          *Game            `json:"game"`
 	UsedQuestions []string         `json:"usedQuestions"`
@@ -13,6 +8,8 @@ type GameStatePayload struct {
 	Host          string           `json:"host"`
 	GameMode      GameMode         `json:"gameMode"`
 	Question      *CurrentQuestion `json:"currentQuestion,omitempty"`
+	TrainingState *TrainingState   `json:"trainingState,omitempty"`
+	GameEnded     bool             `json:"gameEnded"`
 }
 
 func BuildGameState(room *Room) GameStatePayload {
@@ -24,5 +21,7 @@ func BuildGameState(room *Room) GameStatePayload {
 		Host:          room.HostID,
 		GameMode:      room.GameMode,
 		Question:      room.CurrentQuestion,
+		TrainingState: room.TrainingState,
+		GameEnded:     room.GameEnded,
 	}
 }
