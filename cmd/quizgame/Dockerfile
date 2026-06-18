@@ -21,7 +21,7 @@ WORKDIR /app
 COPY --from=builder /app/bin/quizgame /app/quizgame
 
 ENV PROJECT_ROOT=/app
-ENV ADDR=:3001
+ENV ADDR=0.0.0.0:3001
 ENV LOGGER_FOLDER=/app/logs
 
 EXPOSE 3001
