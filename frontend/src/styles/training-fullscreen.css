@@ -1,0 +1,496 @@
+/* ==================== TRAINING FULLSCREEN + SLIDESHOW - CLEAN PREMIUM DESIGN ==================== */
+
+/* Основной fullscreen контейнер (без анимированных орбов) */
+.training-fullscreen-container {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000 !important;
+  background: radial-gradient(ellipse at center, #1e1b4b 0%, #0f0f23 45%, #000000 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  box-sizing: border-box;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Полностью скрываем всё остальное при активном тренировочном режиме */
+.training-fullscreen-container ~ * {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* ==================== SLIDESHOW ==================== */
+.slideshow-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10003;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.slideshow-container {
+  width: 100%;
+  max-width: 1140px;
+  max-height: 95vh;
+  background: rgba(17, 17, 38, 0.98);
+  backdrop-filter: blur(32px);
+  border-radius: 34px;
+  border: 1px solid rgba(99, 102, 241, 0.5);
+  box-shadow: 
+    0 70px 160px -40px rgba(0, 0, 0, 0.9),
+    inset 0 2px 0 rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+  animation: slideshowAppear 0.8s cubic-bezier(0.25, 0.95, 0.35, 1);
+}
+
+@keyframes slideshowAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.86) translateY(70px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Навигация */
+.slideshow-skip-btn,
+.slideshow-nav-btn {
+  position: absolute;
+  z-index: 30;
+  transition: all 0.3s ease;
+}
+
+.slideshow-skip-btn {
+  top: 28px;
+  right: 32px;
+  background: rgba(99, 102, 241, 0.18);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.45);
+  padding: 11px 24px;
+  border-radius: 9999px;
+  font-size: 0.97rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.slideshow-skip-btn:hover {
+  background: rgba(99, 102, 241, 0.4);
+  color: white;
+}
+
+.slideshow-nav-btn {
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(15, 15, 35, 0.92);
+  border: 1px solid rgba(99, 102, 241, 0.55);
+  color: #c4d0ff;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.slideshow-nav-btn:hover {
+  background: #6366f1;
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.slideshow-prev-btn { left: 26px; }
+.slideshow-next-btn { right: 26px; }
+
+/* ==================== СЛАЙДЫ ==================== */
+.slideshow-slide {
+  min-height: 640px;
+  padding: 3.2rem 3.8rem;
+  display: flex;
+  flex-direction: column;
+  color: #e0e7ff;
+}
+
+.fade-in {
+  animation: fadeInUp 0.65s ease forwards;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(45px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Слайд 0 — Вступление */
+.intro-slide {
+  text-align: center;
+  justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.intro-image-container {
+  max-width: 580px;
+  margin: 0 auto 2.8rem;
+  border-radius: 26px;
+  overflow: hidden;
+  width: fit-content;
+  box-shadow: none;
+  background: transparent;
+  border: 0;
+}
+
+.intro-image { 
+  width: 100%; 
+  height: auto; 
+  max-height: 60vh; 
+  object-fit: contain; 
+  display: block; 
+  border-radius: inherit;
+  background: transparent;
+}
+
+.intro-title {
+  font-size: 2.35rem;
+  font-weight: 700;
+  margin-bottom: 1.3rem;
+  background: linear-gradient(90deg, #c4d0ff, #a5b4fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.intro-description {
+  font-size: 1.22rem;
+  line-height: 1.7;
+  max-width: 720px;
+  margin: 0 auto 2.8rem;
+  opacity: 0.92;
+}
+
+.intro-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: #818cf8;
+  font-size: 1.12rem;
+}
+
+/* Слайд 1 — Вопрос + Ответ */
+.question-slide .question-text {
+  font-size: 1.75rem;
+  line-height: 1.5;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 3rem;
+  color: #e0e7ff;
+}
+
+/* Поле ввода ответа */
+.answer-input {
+  width: 100%;
+  max-width: 700px;
+  padding: 22px 28px;
+  font-size: 1.18rem;
+  background: rgba(15, 23, 42, 0.92);
+  border: 2px solid rgba(99, 102, 241, 0.55);
+  border-radius: 20px;
+  color: white;
+  margin: 0 auto 20px;
+  transition: all 0.3s ease;
+}
+
+.answer-input:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.3);
+}
+
+.submit-answer-btn {
+  padding: 17px 44px;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 1.12rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-answer-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.submit-answer-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(99, 102, 241, 0.45);
+}
+
+/* Прогресс ответов */
+.players-answered-progress {
+  max-width: 700px;
+  margin: 0 auto 1.5rem;
+}
+
+.progress-text {
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 1.05rem;
+  color: #94a3b8;
+}
+
+.progress-bar-container {
+  height: 8px;
+  background: rgba(99, 102, 241, 0.2);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #a5b4fc);
+  border-radius: 9999px;
+  transition: width 0.6s ease;
+}
+
+/* Панель ведущего */
+.host-answers-panel {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.4rem;
+  margin-bottom: 1.6rem;
+  color: #c4d0ff;
+}
+
+.players-status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.player-status-item {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 19px 24px;
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  transition: all 0.3s ease;
+}
+
+.player-status-item.correct   { border-color: #4ade80; background: rgba(74, 222, 128, 0.15); }
+.player-status-item.incorrect { border-color: #f87171; background: rgba(248, 113, 113, 0.15); }
+.player-status-item.pending-verify { border-color: #fbbf24; }
+
+.status-icon { min-width: 30px; color: #94a3b8; }
+.status-player-name { font-weight: 600; min-width: 160px; }
+.status-answer { font-style: italic; color: #cbd5e1; flex: 1; }
+
+.verify-buttons {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.verify-btn {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.verify-btn.correct   { background: #4ade80; color: #0f172a; }
+.verify-btn.incorrect { background: #f87171; color: white; }
+
+.verify-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Состояние "Ответ отправлен" */
+.answer-submitted {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.answer-result.waiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  color: #94a3b8;
+}
+
+.result-icon {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+.answer-time {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #818cf8;
+}
+
+/* Слайд 2 — Результаты */
+.result-slide {
+  padding: 3.2rem 3.8rem;
+}
+
+.result-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 34px;
+  background: rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.55);
+  border-radius: 9999px;
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin-bottom: 2.4rem;
+}
+
+.top-answers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 2.2rem;
+}
+
+.top-answer-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 24px;
+  background: rgba(30, 27, 75, 0.7);
+  border-radius: 18px;
+  border: 1px solid rgba(129, 140, 248, 0.35);
+}
+
+.top-answer-item.first-place {
+  background: linear-gradient(90deg, rgba(234, 179, 8, 0.25), rgba(245, 158, 11, 0.2));
+  border-color: #facc15;
+}
+
+.top-rank {
+  font-size: 1.55rem;
+  font-weight: 700;
+  width: 38px;
+  color: #e0e7ff;
+}
+
+.correct-answer-display {
+  margin-top: 2.5rem;
+  padding: 28px;
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.5);
+  border-radius: 20px;
+  text-align: center;
+}
+
+.correct-answer-text {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #67e8b5;
+  margin-top: 10px;
+}
+
+/* Слайд 3 — Пояснение */
+.explanation-slide {
+  padding: 3.2rem 3.8rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.explanation-content {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.explanation-image-container {
+  margin-bottom: 2.8rem;
+  border-radius: 20px;
+  overflow: hidden;
+  width: fit-content;
+  max-width: 100%;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.explanation-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 52vh;           /* чуть увеличил для лучшей видимости */
+  object-fit: contain;
+  object-position: center;
+  border-radius: inherit;
+  background: transparent;
+}
+
+.explanation-title {
+  font-size: 1.9rem;
+  margin-bottom: 1.4rem;
+  color: #c4d0ff;
+}
+
+.explanation-text {
+  font-size: 1.2rem;
+  line-height: 1.82;
+  color: #cbd5e1;
+}
+
+.question-completed-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  background: rgba(52, 211, 153, 0.18);
+  border: 1px solid rgba(52, 211, 153, 0.5);
+  border-radius: 22px;
+  margin-top: 3rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+  .slideshow-slide { padding: 2.4rem 2.8rem; }
+}
+
+@media (max-width: 768px) {
+  .slideshow-container { border-radius: 26px; }
+  .slideshow-slide { padding: 2rem 1.8rem; min-height: 580px; }
+  
+  .question-text { font-size: 1.55rem; }
+  .intro-title { font-size: 2rem; }
+}

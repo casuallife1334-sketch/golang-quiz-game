@@ -1,0 +1,22 @@
+/* Game Board Additional */
+
+.game-board {
+  row-gap: 16px;
+  padding: 20px;
+}
+
+.category-card {
+  backdrop-filter: blur(10px);
+}
+
+@media (max-width: 768px) {
+  .game-board {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    padding: 14px;
+  }
+
+  .question-card {
+    height: 50px;
+    font-size: 1.1rem;
+  }
+}

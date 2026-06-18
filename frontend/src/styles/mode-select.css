@@ -1,0 +1,200 @@
+/* Mode Select Screen */
+
+.mode-select-screen {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+  overflow-y: auto;
+}
+
+.mode-select-container {
+  max-width: 900px;
+  width: 100%;
+  text-align: center;
+}
+
+.mode-select-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin: 0 0 12px;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.mode-select-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  margin: 0 0 48px;
+}
+
+.mode-select-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.mode-select-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 24px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  color: inherit;
+  font-family: inherit;
+}
+
+.mode-select-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.mode-select-card.custom:hover {
+  border-color: rgba(251, 191, 36, 0.5);
+  background: rgba(251, 191, 36, 0.08);
+  box-shadow: 0 20px 60px rgba(251, 191, 36, 0.15);
+}
+
+.mode-select-card.training:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+  background: rgba(99, 102, 241, 0.08);
+  box-shadow: 0 20px 60px rgba(99, 102, 241, 0.15);
+}
+
+.mode-card-icon {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+
+.mode-select-card.custom .mode-card-icon {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
+}
+
+.mode-select-card.training .mode-card-icon {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+}
+
+.mode-emoji {
+  font-size: 2.5rem;
+}
+
+.mode-select-card h2 {
+  margin: 0 0 12px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.mode-card-desc {
+  margin: 0 0 20px;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.mode-card-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  text-align: left;
+  width: 100%;
+}
+
+.mode-card-features li {
+  padding: 8px 0;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mode-card-features li:last-child {
+  border-bottom: none;
+}
+
+.mode-card-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 6px 12px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mode-select-card.custom .mode-card-badge {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.3), rgba(245, 158, 11, 0.3));
+  color: #fbbf24;
+}
+
+.mode-select-card.training .mode-card-badge {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3));
+  color: #a5b4fc;
+}
+
+.mode-select-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.mode-select-back:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mode-select-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mode-select-title {
+    font-size: 2rem;
+  }
+
+  .mode-select-card {
+    padding: 24px 20px;
+  }
+
+  .mode-card-icon {
+    width: 64px;
+    height: 64px;
+  }
+
+  .mode-emoji {
+    font-size: 2rem;
+  }
+
+  .mode-select-card h2 {
+    font-size: 1.3rem;
+  }
+}

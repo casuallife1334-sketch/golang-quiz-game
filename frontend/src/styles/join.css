@@ -1,0 +1,538 @@
+/* Join Screen - Modern Gaming Design */
+
+.join-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background Effects */
+.join-bg-gradient {
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at 20% 0%, rgba(var(--accent-rgb), 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 50%, rgba(var(--accent-rgb), 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgba(var(--accent-rgb), 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+  animation: gradientShift 15s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.join-bg-grid {
+  position: fixed;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: 0;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+
+/* Join Card */
+.join-card {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 480px;
+  padding: 48px 40px;
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
+  animation: cardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cardEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Back Navigation */
+.back-nav {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.back-nav:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--border-highlight);
+  color: var(--text);
+  transform: translateX(-4px);
+}
+
+/* Header */
+.join-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.join-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background: var(--gradient);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-accent);
+  color: white;
+  animation: iconPulse 2s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.join-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Room Hint */
+.room-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-full);
+  margin: 0 auto 28px;
+  font-size: 0.95rem;
+  color: var(--text);
+  font-weight: 500;
+  animation: hintPulse 2s ease-in-out infinite;
+}
+
+.room-hint strong {
+  color: var(--accent-light);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+@keyframes hintPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.4); }
+  50% { box-shadow: 0 0 0 10px rgba(var(--accent-rgb), 0); }
+}
+
+/* Profile Section */
+.profile-section {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  animation: fadeInUp 0.6s ease 0.1s both;
+}
+
+/* Avatar Preview */
+.avatar-preview {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  min-width: 84px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--border-highlight);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient);
+  box-shadow: var(--shadow-accent);
+  transition: var(--transition-base);
+  cursor: pointer;
+}
+
+.avatar-preview:hover {
+  border-color: var(--accent);
+  transform: scale(1.05);
+}
+
+.avatar-preview.drag-over {
+  border-color: var(--success);
+  background: rgba(16, 185, 129, 0.2);
+  transform: scale(1.1);
+}
+
+.avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.avatar-placeholder svg {
+  opacity: 0.8;
+}
+
+.avatar-initial {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 28px;
+  height: 28px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  backdrop-filter: blur(4px);
+}
+
+.avatar-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: var(--transition-base);
+  cursor: pointer;
+  color: white;
+}
+
+.avatar-preview:hover .avatar-overlay {
+  opacity: 1;
+}
+
+.avatar-overlay input {
+  display: none;
+}
+
+/* Profile Fields */
+.profile-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: var(--transition-fast);
+}
+
+.input-group:focus-within .input-icon {
+  color: var(--accent);
+}
+
+.input-field {
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: var(--transition-base);
+}
+
+.input-field::placeholder {
+  color: var(--text-muted);
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* Room Code Section */
+.room-code-section {
+  margin-bottom: 28px;
+  animation: fadeInUp 0.6s ease 0.2s both;
+}
+
+.input-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.room-code {
+  text-align: center;
+  letter-spacing: 0.4em;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 18px 16px;
+}
+
+/* Join Button */
+.btn-join {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px 32px;
+  background: var(--gradient);
+  border: none;
+  border-radius: var(--radius-md);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition-base);
+  box-shadow: var(--shadow-accent);
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease 0.3s both;
+}
+
+.btn-join::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-join:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.btn-join:hover:not(:disabled) {
+  background: var(--gradient-hover);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 16px 48px var(--accent-glow);
+}
+
+.btn-join:active:not(:disabled) {
+  transform: translateY(-1px) scale(0.98);
+}
+
+.btn-join:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-arrow {
+  transform: rotate(180deg);
+  transition: var(--transition-fast);
+}
+
+.btn-join:hover .btn-arrow {
+  transform: rotate(180deg) translateX(-4px);
+}
+
+/* Button Spinner */
+.btn-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Auto Join State */
+.join-card.auto-join {
+  max-width: 420px;
+  text-align: center;
+}
+
+.auto-join-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 0;
+}
+
+.loading-spinner-wrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.loading-spinner {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-ring {
+  position: absolute;
+  inset: -8px;
+  border: 3px solid transparent;
+  border-top-color: var(--accent-light);
+  border-radius: 50%;
+  animation: spin 1.5s linear infinite reverse;
+  opacity: 0.5;
+}
+
+.auto-join-content h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.room-code-highlight {
+  color: var(--accent-light);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.auto-join-content p {
+  margin: 0;
+  color: var(--text-dim);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .join-screen {
+    padding: 0;
+    height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .join-card {
+    border-radius: 0;
+    padding: calc(24px + var(--safe-top)) 24px calc(24px + var(--safe-bottom));
+    max-width: 100%;
+    box-shadow: none;
+    border: none;
+  }
+
+  .profile-section {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .avatar-preview {
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+  }
+
+  .profile-fields {
+    width: 100%;
+  }
+
+  .input-group {
+    width: 100%;
+  }
+
+  .input-field {
+    width: 100%;
+    padding: 16px;
+    font-size: 1rem;
+  }
+
+  .join-title {
+    font-size: 1.5rem;
+    margin-bottom: 24px;
+  }
+
+  .btn-join {
+    width: 100%;
+    font-size: 1.1rem;
+    padding: 18px;
+    margin-top: 24px;
+    position: sticky;
+    bottom: 16px;
+  }
+
+  .room-code-section {
+    width: 100%;
+  }
+
+  .room-code {
+    font-size: 1.5rem;
+    letter-spacing: 0.5em;
+    padding: 18px;
+  }
+
+  .back-nav {
+    top: calc(12px + var(--safe-top));
+    left: 12px;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .join-card,
+  .avatar-preview,
+  .btn-join,
+  .back-nav {
+    animation: none;
+  }
+}
