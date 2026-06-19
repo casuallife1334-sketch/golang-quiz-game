@@ -10,8 +10,6 @@ services:
       - WS_ALLOWED_ORIGINS=${WS_ALLOWED_ORIGINS}
       - LOGGER_LEVEL=${LOGGER_LEVEL}
       - LOGGER_FOLDER=/app/logs
-    volumes:
-      - ${PROJECT_ROOT}/logs:/app/logs
     restart: always
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/health"]
