@@ -1,5 +1,4 @@
 import { useParams, useNavigate } from "react-router-dom";
-import EndGameButton from "../components/EndGameButton";
 import { RoomProvider, useRoom } from "../context/RoomContext";
 import GameBoard from "../components/GameBoard";
 import PlayersPanel from "../components/PlayersPanel";
@@ -48,7 +47,15 @@ function LobbyContent() {
   const [selectedMode, setSelectedMode] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const navigate = useNavigate();
 
+
+  const handleLeaveRoom = useCallback(() => {
+    if (roomId) {
+      socket.emit("leave-room", { roomId });
+    }
+    navigate("/");
+  }, [navigate, roomId]);
 
   const handleEndGame = useCallback(() => {
     if (!canEndGame({ isHost })) {
@@ -374,6 +381,7 @@ const renderContent = () => {
               isConnected={isConnected}
               onShowReport={() => setShowReport(true)}
               onEndGame={canEndGame({ isHost }) ? handleEndGame : undefined}
+              onLeaveRoom={handleLeaveRoom}
               hasGame={!!(localGame || game)}
               host={host}
               players={players}

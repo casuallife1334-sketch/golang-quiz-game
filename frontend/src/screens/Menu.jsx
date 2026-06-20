@@ -1,16 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import {
-  Gamepad2,
-  Users,
-  Palette,
-  Sparkles,
-  Zap,
-  Trophy,
-  Crown,
-  ChevronDown,
-  Check
-} from "lucide-react";
+import { Gamepad2, Users, Palette, Sparkles, Crown, ChevronDown, Check } from "lucide-react";
 import "../styles/menu.css";
 import logoImage from "../styles/123313.png";
 
@@ -27,10 +17,10 @@ export default function Menu() {
   }, [theme]);
 
   const themes = [
-    { id: "dark", name: "Dark", color: "#6366f1", gradient: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" },
-    { id: "cyber", name: "Cyber", color: "#22d3ee", gradient: "linear-gradient(135deg, #22d3ee 0%, #3b82f6 100%)" },
-    { id: "noir", name: "Noir", color: "#fbbf24", gradient: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)" },
-    { id: "rose", name: "Rose", color: "#fb7185", gradient: "linear-gradient(135deg, #fb7185 0%, #e879f9 100%)" }
+    { id: "dark", name: "Blue", color: "#6366f1" },
+    { id: "cyber", name: "Cyber", color: "#22d3ee" },
+    { id: "noir", name: "Noir", color: "#fbbf24" },
+    { id: "rose", name: "Rose", color: "#fb7185" }
   ];
 
   const currentTheme = themes.find(t => t.id === theme) || themes[0];
@@ -64,7 +54,7 @@ export default function Menu() {
             >
               <div
                 className="theme-color-indicator"
-                style={{ background: t.gradient }}
+                style={{ background: t.color || "var(--accent)" }}
               />
               <span className="theme-option-name">{t.name}</span>
               {theme === t.id && (
@@ -152,21 +142,6 @@ export default function Menu() {
           </button>
         </div>
 
-        {/* Features with icons */}
-        <div className="menu-features">
-          <div className="menu-feature-item">
-            <Zap size={16} strokeWidth={2} />
-            <span>Быстрая игра</span>
-          </div>
-          <div className="menu-feature-item">
-            <Trophy size={16} strokeWidth={2} />
-            <span>Соревнования</span>
-          </div>
-          <div className="menu-feature-item">
-            <Users size={16} strokeWidth={2} />
-            <span>До 100 игроков</span>
-          </div>
-        </div>
       </div>
     </div>
   );

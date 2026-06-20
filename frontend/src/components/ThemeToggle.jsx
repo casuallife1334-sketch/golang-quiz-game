@@ -1,5 +1,5 @@
 const themes = [
-  { id: "dark", label: "Dark" },
+  { id: "dark", label: "Blue" },
   { id: "cyber", label: "Cyber" },
   { id: "noir", label: "Noir" }
 ];

@@ -267,7 +267,6 @@ export default function Join() {
               <img src={avatar} alt="Аватар" />
             ) : (
               <div className="avatar-placeholder">
-                <User size={32} strokeWidth={2} />
                 <span className="avatar-initial">
                   {name.trim() ? name.trim()[0].toUpperCase() : "?"}
                 </span>

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { socket } from "../socket/socket";
-import { Sparkles } from "lucide-react";
 import "../styles/players-panel.css";
 
 function getInitials(name) {
@@ -60,15 +59,6 @@ export default function PlayersPanel({ players, host, scores, isConnected, curre
   const allPlayers = players || [];
   const currentPlayer = allPlayers.find((player) => player.id === myId) || null;
   const gamePlayers = allPlayers.filter((p) => p.id !== host);
-
-  if (gamePlayers.length === 0) {
-    return (
-      <div className="pp-empty">
-        <Sparkles size={32} strokeWidth={1.5} />
-        <span>Ожидание игроков...</span>
-      </div>
-    );
-  }
 
   const sortedPlayers = [...gamePlayers].sort((a, b) => {
     const scoreA = scores?.[a.id] || 0;

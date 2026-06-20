@@ -2,7 +2,7 @@ import { getClientId, getClientToken, saveUserProfile } from "../userProfile";
 
 const WS_URL = import.meta.env.PROD
   ? `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}/ws`
-  : "ws://localhost:3001/ws";
+  : "/ws";
 
 class QuizWebSocket {
   constructor(url) {
@@ -21,7 +21,7 @@ class QuizWebSocket {
   }
 
   connectionUrl() {
-    const url = new URL(this.url);
+    const url = new URL(this.url, window.location.origin);
     const clientId = getClientId();
     const clientToken = getClientToken();
     if (clientId) {

@@ -98,7 +98,9 @@ npm install
 npm run dev
 ```
 
-По умолчанию Vite откроется на `http://localhost:5173` и будет подключаться к backend по `ws://localhost:3001/ws`.
+По умолчанию Vite откроется на `http://localhost:5173` и будет проксировать `/ws` на backend на `http://localhost:3001`.
+
+При запуске через `docker compose` фронтенд доступен на `http://localhost:3001`, backend внутри compose доступен по имени сервиса `quizgame-backend:3001`.
 
 ## Проверка
 

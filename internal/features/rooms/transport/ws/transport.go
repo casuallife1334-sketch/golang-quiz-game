@@ -53,5 +53,9 @@ func (h *RoomsWSHandler) Routes() []core_ws.Route {
 			Type:    "request-state",
 			Handler: h.RequestState,
 		},
+		{
+			Type:    "leave-room",
+			Handler: h.LeaveRoom,
+		},
 	}
 }
