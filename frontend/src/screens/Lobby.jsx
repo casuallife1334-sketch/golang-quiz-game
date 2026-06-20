@@ -34,6 +34,7 @@ function LobbyContent() {
     timerStart,
     timerDuration,
     speechStart,
+    questionSyncState,
     gameMode,
     unlockedQuestions,
     trainingState,
@@ -237,6 +238,7 @@ const renderContent = () => {
         timerStart={timerStart}
         timerDuration={timerDuration}
         speechStart={speechStart}
+        questionSyncState={questionSyncState}
         questionIndex={currentQuestion.questionIndex ?? 0}
         inline
       />

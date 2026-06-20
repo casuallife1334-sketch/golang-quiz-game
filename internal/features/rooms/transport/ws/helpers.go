@@ -32,8 +32,11 @@ func (h *RoomsWSHandler) sendReconnectState(session core_ws.Session, room *domai
 			"trainingState": room.TrainingState,
 		}})
 		session.Send(realtime.Event{Type: "question-sync-state", Payload: map[string]interface{}{
+			"categoryIndex":    room.CurrentQuestion.CategoryIndex,
+			"questionIndex":    room.CurrentQuestion.QuestionIndex,
 			"attemptedPlayers": attemptedPlayers(room),
 			"activeAnswererId": room.CurrentQuestion.ActiveAnswererID,
+			"pendingAnswer":    room.CurrentQuestion.PendingAnswer,
 			"stoppedTimeLeft":  room.CurrentQuestion.StoppedTimeLeft,
 			"timerPausedAt":    room.CurrentQuestion.TimerPausedAt,
 		}})

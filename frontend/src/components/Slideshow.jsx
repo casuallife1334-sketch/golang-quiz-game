@@ -2,8 +2,8 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { ChevronRight, ChevronLeft, Sparkles, Frown, Users, Clock, Trophy, Check, X } from "lucide-react";
 import Confetti from "react-confetti";
 import { socket } from "../socket/socket";
-import { resolveImageUrl, getFallbackImage } from "../utils/imageUtils.js";
 import { useRoom } from "../context/RoomContext";
+import ImageWithStatus from "./ImageWithStatus";
 import { getTrainingDurationMs } from "../utils/trainingTiming";
 import "../styles/slideshow-redesign.css";
 
@@ -457,7 +457,7 @@ export default function Slideshow({ question, onClose, isHost, playerId, players
           <div className="slideshow-slide intro-slide fade-in">
             {situation.image && (
               <div className="intro-image-container">
-                <img src={resolveImageUrl(situation.image) || getFallbackImage('600/400', 10)} alt={situation.title || "Фото ситуации"} className="intro-image" loading="lazy" onError={(e) => { e.target.src = getFallbackImage('600/400', 10); }} />
+                <ImageWithStatus src={situation.image} alt={situation.title || "Фото ситуации"} className="intro-image" loading="lazy" />
               </div>
             )}
             <div className="intro-content">
@@ -476,7 +476,7 @@ export default function Slideshow({ question, onClose, isHost, playerId, players
           <div className="slideshow-slide question-slide fade-in">
             {(question.questionImage || question.image) && (
               <div className="question-image-container">
-                <img src={resolveImageUrl(question.questionImage || question.image) || getFallbackImage('600/400', 15)} alt="Вопрос" className="question-image" loading="lazy" onError={(e) => { e.target.src = getFallbackImage('600/400', 15); }} />
+                <ImageWithStatus src={question.questionImage || question.image} alt="Вопрос" className="question-image" loading="lazy" />
               </div>
             )}
             <div className="question-content">
@@ -697,7 +697,7 @@ export default function Slideshow({ question, onClose, isHost, playerId, players
             <div className="explanation-content">
               {explanation.image && (
                 <div className="explanation-image-container">
-                  <img src={resolveImageUrl(explanation.image) || getFallbackImage('500/300', 20)} alt={explanation.title || "Фото пояснения"} className="explanation-image" loading="lazy" onError={(e) => { e.target.src = getFallbackImage('500/300', 20); }} />
+                  <ImageWithStatus src={explanation.image} alt={explanation.title || "Фото пояснения"} className="explanation-image" loading="lazy" />
                 </div>
               )}
 

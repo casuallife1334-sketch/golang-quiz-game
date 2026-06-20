@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { getFallbackImage, resolveImageUrl } from "./imageUtils.js";
+import { resolveImageUrl } from "./imageUtils.js";
 
 test("resolveImageUrl returns null for empty values", () => {
   assert.equal(resolveImageUrl(), null);
@@ -19,11 +19,4 @@ test("resolveImageUrl preserves absolute and special URLs", () => {
 test("resolveImageUrl preserves root-relative paths and maps relative ones into public images", () => {
   assert.equal(resolveImageUrl("/images/a.png"), "/images/a.png");
   assert.equal(resolveImageUrl(" folder/pic.png "), "/images/folder/pic.png");
-});
-
-test("getFallbackImage builds a deterministic picsum URL", () => {
-  assert.equal(
-    getFallbackImage("800x600", 42),
-    "https://picsum.photos/800x600?random=42"
-  );
 });

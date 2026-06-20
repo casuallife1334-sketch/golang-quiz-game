@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { resolveImageUrl, getFallbackImage } from "../utils/imageUtils.js";
 import { migrateGame } from "../utils/gameMigration.js";
 import ModeSettings from "../components/ModeSettings";
+import ImageWithStatus from "../components/ImageWithStatus";
 import { getTrainingDurationMs } from "../utils/trainingTiming";
 import "../styles/constructor.css";
 
@@ -351,12 +351,11 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
                   />
                   <div className="image-preview-container">
                     {currentQuestion.situation.image && (
-                      <img 
-                        src={resolveImageUrl(currentQuestion.situation.image) || getFallbackImage()} 
+                      <ImageWithStatus
+                        src={currentQuestion.situation.image}
                         alt="Предпросмотр ситуации" 
                         className="image-preview"
                         style={{ maxWidth: '200px', maxHeight: '150px', objectFit: 'cover', borderRadius: '8px' }}
-                        onError={(e) => { e.target.style.display = 'none'; }}
                       />
                     )}
                     <input
@@ -381,12 +380,11 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
                 />
                 <div className="image-preview-container">
                   {currentQuestion.questionImage && (
-                    <img 
-                      src={resolveImageUrl(currentQuestion.questionImage) || getFallbackImage()} 
+                    <ImageWithStatus
+                      src={currentQuestion.questionImage}
                       alt="Предпросмотр вопроса" 
                       className="image-preview"
                       style={{ maxWidth: '200px', maxHeight: '150px', objectFit: 'cover', borderRadius: '8px' }}
-                      onError={(e) => { e.target.style.display = 'none'; }}
                     />
                   )}
                   <input
@@ -410,12 +408,11 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
                 />
                 <div className="image-preview-container">
                   {currentQuestion.answerImage && (
-                    <img 
-                      src={resolveImageUrl(currentQuestion.answerImage) || getFallbackImage()} 
+                    <ImageWithStatus
+                      src={currentQuestion.answerImage}
                       alt="Предпросмотр ответа" 
                       className="image-preview"
                       style={{ maxWidth: '200px', maxHeight: '150px', objectFit: 'cover', borderRadius: '8px' }}
-                      onError={(e) => { e.target.style.display = 'none'; }}
                     />
                   )}
                   <input
@@ -444,12 +441,11 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
                   />
                   <div className="image-preview-container">
                     {currentQuestion.explanation.image && (
-                      <img 
-                        src={resolveImageUrl(currentQuestion.explanation.image) || getFallbackImage()} 
+                      <ImageWithStatus
+                        src={currentQuestion.explanation.image}
                         alt="Предпросмотр пояснения" 
                         className="image-preview"
                         style={{ maxWidth: '200px', maxHeight: '150px', objectFit: 'cover', borderRadius: '8px' }}
-                        onError={(e) => { e.target.style.display = 'none'; }}
                       />
                     )}
                     <input

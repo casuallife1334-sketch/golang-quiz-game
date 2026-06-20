@@ -39,8 +39,6 @@ func (h *AnswersWSHandler) VerifyAnswer(ctx context.Context, session core_ws.Ses
 		h.hub.Broadcast(result.Room.ID, realtime.Event{Type: "reveal-answer", Payload: map[string]interface{}{
 			"reason":           result.RevealReason,
 			"attemptedPlayers": result.AttemptedPlayers,
-			"stoppedTimeLeft":  result.StoppedTimeLeft,
-			"timerPausedAt":    nil,
 		}})
 	}
 	return nil

@@ -2,6 +2,8 @@ include .env
 export
 
 export PROJECT_ROOT=${shell pwd}
+BUILD_ID := $(shell date +%Y%m%d%H%M%S)
+export BUILD_ID
 
 server-run:
 	@go run ./cmd/quizgame
@@ -17,7 +19,14 @@ build:
 	@cd frontend && npm run build
 
 deploy:
-	@docker compose up -d --build quizgame-backend quizgame-frontend
+	@docker compose down --remove-orphans --volumes --rmi all
+	@docker compose build --no-cache --pull quizgame-backend quizgame-frontend
+	@docker compose up -d --force-recreate --remove-orphans quizgame-backend quizgame-frontend
+
+deploy-fresh:
+	@docker compose down --remove-orphans --volumes --rmi all
+	@docker compose build --no-cache --pull quizgame-backend quizgame-frontend
+	@docker compose up -d --force-recreate --remove-orphans quizgame-backend quizgame-frontend
 
 undeploy:
 	@docker compose down

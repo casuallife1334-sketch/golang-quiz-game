@@ -9,7 +9,6 @@ import (
 
 func (s *AnswersService) AnswerTimeout(ctx context.Context, roomID string, playerID string) (domain.VerifyAnswerResult, error) {
 	var nextCanStillAnswer bool
-	var nextResumedTimerStart *int64
 
 	updatedRoom, err := s.roomsRepository.UpdateRoomByID(ctx, roomID, func(room *domain.Room) error {
 		if !canPlayerAnswer(room, playerID) {
@@ -21,8 +20,7 @@ func (s *AnswersService) AnswerTimeout(ctx context.Context, roomID string, playe
 
 		room.CurrentQuestion.AttemptedAnswerers[playerID] = true
 		room.CurrentQuestion.ActiveAnswererID = ""
-		room.CurrentQuestion.TimerPausedAt = nil
-		nextResumedTimerStart = resumedTimerStart(room)
+		room.CurrentQuestion.PendingAnswer = nil
 		nextCanStillAnswer = canStillAnswer(room)
 		return nil
 	})
@@ -31,12 +29,10 @@ func (s *AnswersService) AnswerTimeout(ctx context.Context, roomID string, playe
 	}
 
 	return domain.VerifyAnswerResult{
-		Room:              updatedRoom,
-		AttemptedPlayers:  attemptedPlayers(updatedRoom),
-		CanStillAnswer:    nextCanStillAnswer,
-		RevealAnswer:      !nextCanStillAnswer,
-		RevealReason:      "timeout",
-		StoppedTimeLeft:   updatedRoom.CurrentQuestion.StoppedTimeLeft,
-		ResumedTimerStart: nextResumedTimerStart,
+		Room:             updatedRoom,
+		AttemptedPlayers: attemptedPlayers(updatedRoom),
+		CanStillAnswer:   nextCanStillAnswer,
+		RevealAnswer:     !nextCanStillAnswer,
+		RevealReason:     "timeout",
 	}, nil
 }

@@ -16,6 +16,27 @@ function buildCurrentQuestion(data) {
   };
 }
 
+function attemptedPlayersFromCurrentQuestion(currentQuestion) {
+  if (!currentQuestion?.attemptedAnswerers) return [];
+  if (Array.isArray(currentQuestion.attemptedAnswerers)) return currentQuestion.attemptedAnswerers;
+  return Object.keys(currentQuestion.attemptedAnswerers).filter((playerId) => currentQuestion.attemptedAnswerers[playerId]);
+}
+
+function buildQuestionSyncState(data) {
+  const current = data?.currentQuestion;
+  if (!current) return null;
+
+  return {
+    categoryIndex: current.categoryIndex,
+    questionIndex: current.questionIndex ?? 0,
+    attemptedPlayers: attemptedPlayersFromCurrentQuestion(current),
+    activeAnswererId: current.activeAnswererId || "",
+    pendingAnswer: current.pendingAnswer || null,
+    stoppedTimeLeft: current.stoppedTimeLeft,
+    timerPausedAt: current.timerPausedAt,
+  };
+}
+
 function isGameCompleted(game, usedQuestions) {
   if (!game || !usedQuestions) return false;
 
@@ -74,6 +95,7 @@ export function RoomProvider({ roomId, children, playerName, playerAvatar }) {
   const [timerStart, setTimerStart] = useState(null);
   const [timerDuration, setTimerDuration] = useState(30);
   const [speechStart, setSpeechStart] = useState(null);
+  const [questionSyncState, setQuestionSyncState] = useState(null);
   const [gameMode, setGameMode] = useState("custom"); // "custom" или "training"
   const [unlockedQuestions, setUnlockedQuestions] = useState([]);
   const [trainingState, setTrainingState] = useState(null); // Состояние для режима обучения
@@ -129,6 +151,7 @@ export function RoomProvider({ roomId, children, playerName, playerAvatar }) {
 
       const restoredQuestion = buildCurrentQuestion(data);
       setCurrentQuestion(restoredQuestion);
+      setQuestionSyncState(buildQuestionSyncState(data));
       setTimerStart(data.currentQuestion?.timerStart || null);
       setTimerDuration(data.currentQuestion?.timerDuration || data.currentQuestion?.question?.time || 30);
       setSpeechStart(data.currentQuestion?.speechStart || null);
@@ -144,6 +167,7 @@ export function RoomProvider({ roomId, children, playerName, playerAvatar }) {
       setGame(data.game);
       setUsedQuestions([]);
       setCurrentQuestion(null);
+      setQuestionSyncState(null);
       setGameEnded(false); // Сбрасываем флаг конца игры
       setGameMode(data.gameMode || "custom");
 
@@ -176,6 +200,7 @@ export function RoomProvider({ roomId, children, playerName, playerAvatar }) {
         price: data.price,
         questionIndex: data.questionIndex ?? 0
       });
+      setQuestionSyncState(null);
       setTimerStart(data.timerStart || Date.now());
       setTimerDuration(data.timerDuration || data.question?.time || 30);
       setSpeechStart(data.speechStart || null);
@@ -191,6 +216,7 @@ export function RoomProvider({ roomId, children, playerName, playerAvatar }) {
         return [...prev, key];
       });
       setCurrentQuestion(null);
+      setQuestionSyncState(null);
       setSpeechStart(null);
 
       // В режиме обучения разблокируем следующий вопрос после ответа на текущий
@@ -254,6 +280,11 @@ export function RoomProvider({ roomId, children, playerName, playerAvatar }) {
       setPlayerAnswerRequests([]);
     };
 
+    const onQuestionSyncState = (data) => {
+      console.log("[Room] Question sync state received:", data);
+      setQuestionSyncState(data || null);
+    };
+
     const onErrorRoom = (data) => {
       console.error("[Room] Error:", data);
       alert("Комната не найдена или закрыта");
@@ -311,6 +342,7 @@ export function RoomProvider({ roomId, children, playerName, playerAvatar }) {
     socket.on("score-update", onScoreUpdate);
     socket.on("player-answer-request", onPlayerAnswerRequest);
     socket.on("player-answer-result", onPlayerAnswerResult);
+    socket.on("question-sync-state", onQuestionSyncState);
     socket.on("error-room", onErrorRoom);
     socket.on("room-membership-required", onRoomMembershipRequired);
     socket.on("game-ended", onGameEnded);
@@ -343,6 +375,7 @@ export function RoomProvider({ roomId, children, playerName, playerAvatar }) {
       socket.off("score-update", onScoreUpdate);
       socket.off("player-answer-request", onPlayerAnswerRequest);
       socket.off("player-answer-result", onPlayerAnswerResult);
+      socket.off("question-sync-state", onQuestionSyncState);
       socket.off("error-room", onErrorRoom);
       socket.off("room-membership-required", onRoomMembershipRequired);
       socket.off("game-ended", onGameEnded);
@@ -404,6 +437,7 @@ export function RoomProvider({ roomId, children, playerName, playerAvatar }) {
     setTimerStart,
     timerDuration,
     speechStart,
+    questionSyncState,
     setCurrentQuestion,
     gameMode,
     setGameMode,

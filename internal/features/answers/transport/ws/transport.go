@@ -10,8 +10,8 @@ import (
 
 type AnswersService interface {
 	PlayerWantsAnswer(ctx context.Context, roomID string, playerID string) (*domain.Room, error)
-	PauseTimer(ctx context.Context, roomID string, playerID string, timeLeft int) (domain.PauseTimerResult, error)
-	SubmitAnswer(ctx context.Context, roomID string, playerID string, answer string) (*domain.Room, error)
+	PauseTimer(ctx context.Context, roomID string, playerID string) (domain.PauseTimerResult, error)
+	SubmitAnswer(ctx context.Context, roomID string, playerID string, playerName string, answer string, timeLeft int) (*domain.Room, error)
 	AnswerTimeout(ctx context.Context, roomID string, playerID string) (domain.VerifyAnswerResult, error)
 	VerifyAnswer(ctx context.Context, roomID string, hostID string, playerID string, isCorrect bool) (domain.VerifyAnswerResult, error)
 }

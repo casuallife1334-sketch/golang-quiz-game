@@ -2,106 +2,176 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { socket } from "../socket/socket";
 import { soundManager } from "../utils/soundManager";
 import { useRoom } from "../context/RoomContext";
-import { resolveImageUrl, getFallbackImage } from "../utils/imageUtils.js";
-import { BookOpen, Users } from "lucide-react";
+import ImageWithStatus from "./ImageWithStatus";
 import "../styles/question-view.css";
+
+const answerDraftKey = (roomId, playerId, categoryIndex, questionIndex) =>
+  `quiz-answer-draft:${roomId}:${playerId}:${categoryIndex}:${questionIndex}`;
+
+function getRoomIdFromPath() {
+  if (typeof window === "undefined") return "";
+  return window.location.pathname.split('/').pop() || "";
+}
+
+function loadAnswerDraft(playerId, categoryIndex, questionIndex) {
+  if (typeof window === "undefined" || !playerId) return "";
+  try {
+    return localStorage.getItem(answerDraftKey(getRoomIdFromPath(), playerId, categoryIndex, questionIndex)) || "";
+  } catch {
+    return "";
+  }
+}
+
+function saveAnswerDraft(playerId, categoryIndex, questionIndex, answer) {
+  if (typeof window === "undefined" || !playerId) return;
+  try {
+    const key = answerDraftKey(getRoomIdFromPath(), playerId, categoryIndex, questionIndex);
+    if (answer) {
+      localStorage.setItem(key, answer);
+    } else {
+      localStorage.removeItem(key);
+    }
+  } catch {
+    // ignore
+  }
+}
+
+function clearAnswerDraft(playerId, categoryIndex, questionIndex) {
+  saveAnswerDraft(playerId, categoryIndex, questionIndex, "");
+}
 
 export default function QuestionView({
   question, categoryIndex, price, players, scores,
   onClose, isHost, playerId, timerStart, timerDuration,
-  speechStart, questionIndex, inline = false
+  speechStart, questionIndex, questionSyncState, inline = false
 }) {
-  const { setTimerStart, gameMode, host } = useRoom();
+  const { setTimerStart, host } = useRoom();
   const [step, setStep] = useState('answering');
   const [timeLeft, setTimeLeft] = useState(timerDuration || 30);
-  const [stoppedTimeLeft, setStoppedTimeLeft] = useState(null);
   const [isLowTime, setIsLowTime] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [userAnswer, setUserAnswer] = useState("");
   const [hasAnswered, setHasAnswered] = useState(false);
   const [hasAttempted, setHasAttempted] = useState(false);
+  const [selfLockedOut, setSelfLockedOut] = useState(false);
   const [showIncorrectNotice, setShowIncorrectNotice] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [wantsToAnswer, setWantsToAnswer] = useState(false);
-  const [submittedAnswers, setSubmittedAnswers] = useState([]);
   const [pendingAnswer, setPendingAnswer] = useState(null);
+  const [answerResult, setAnswerResult] = useState(null);
+  const [ownAnswerResult, setOwnAnswerResult] = useState(null);
   const [activeAnswerer, setActiveAnswerer] = useState(null);
   const [blockedPlayers, setBlockedPlayers] = useState([]);
   const [attemptedPlayers, setAttemptedPlayers] = useState([]);
-  const [answerTimeLeft, setAnswerTimeLeft] = useState(15);
-  const [isAnswerTimerRunning, setIsAnswerTimerRunning] = useState(false);
-  const [isTimerPaused, setIsTimerPaused] = useState(false);
-  const [trainingExplanationVisible, setTrainingExplanationVisible] = useState(false);
   const answerInputRef = useRef(null);
-  const answerTimeoutSentRef = useRef(false);
-  const timeoutRoomIdRef = useRef(null);
-  const timeoutPlayerNameRef = useRef("");
   const answerSubmittingRef = useRef(false);
 
   // Refs для socket handlers (чтобы не переподписывались)
   const myId = playerId || socket.id;
   const playersRef = useRef(players);
   const hostRef = useRef(host);
-  const timerDurationRef = useRef(timerDuration);
-  const stoppedTimeLeftRef = useRef(stoppedTimeLeft);
   const wantsToAnswerRef = useRef(wantsToAnswer);
-  const isAnswerTimerRunningRef = useRef(isAnswerTimerRunning);
-  const isTimerPausedRef = useRef(isTimerPaused);
   const hasAttemptedRef = useRef(hasAttempted);
   const activeAnswererRef = useRef(activeAnswerer);
+  const pendingAnswerRef = useRef(pendingAnswer);
+  const ownSubmittedAnswerRef = useRef(null);
+  const timerDurationRef = useRef(timerDuration);
 
   useEffect(() => { playersRef.current = players; }, [players]);
   useEffect(() => { hostRef.current = host; }, [host]);
-  useEffect(() => { timerDurationRef.current = timerDuration; }, [timerDuration]);
-  useEffect(() => { stoppedTimeLeftRef.current = stoppedTimeLeft; }, [stoppedTimeLeft]);
   useEffect(() => { wantsToAnswerRef.current = wantsToAnswer; }, [wantsToAnswer]);
-  useEffect(() => { isAnswerTimerRunningRef.current = isAnswerTimerRunning; }, [isAnswerTimerRunning]);
-  useEffect(() => { isTimerPausedRef.current = isTimerPaused; }, [isTimerPaused]);
   useEffect(() => { hasAttemptedRef.current = hasAttempted; }, [hasAttempted]);
   useEffect(() => { activeAnswererRef.current = activeAnswerer; }, [activeAnswerer]);
+  useEffect(() => { pendingAnswerRef.current = pendingAnswer; }, [pendingAnswer]);
+  useEffect(() => { timerDurationRef.current = timerDuration; }, [timerDuration]);
 
-  const situation = question?.situation || { title: "", description: "", image: "" };
+  const applyQuestionSyncState = useCallback((data) => {
+    if (!data) return;
+    if (data.categoryIndex !== undefined && data.categoryIndex !== categoryIndex) return;
+    if (data.questionIndex !== undefined && data.questionIndex !== questionIndex) return;
+
+    const attempted = data.attemptedPlayers || [];
+    const pending = data.pendingAnswer || null;
+
+    setAttemptedPlayers(attempted);
+    setActiveAnswerer(data.activeAnswererId || pending?.playerId || null);
+    setPendingAnswer(pending);
+
+    if (typeof data.stoppedTimeLeft === "number") {
+      setTimeLeft(data.stoppedTimeLeft);
+    } else if (typeof pending?.timeLeft === "number") {
+      setTimeLeft(pending.timeLeft);
+    }
+
+    if (pending) {
+      setAnswerResult(null);
+    }
+
+    const isOwnPending = pending?.playerId === myId;
+    const isOwnActive = data.activeAnswererId === myId;
+    const hasOwnAttempt = attempted.includes(myId) || isOwnPending || isOwnActive;
+
+    if (hasOwnAttempt) {
+      setSelfLockedOut(true);
+      setHasAttempted(true);
+      hasAttemptedRef.current = true;
+      setBlockedPlayers(prev => prev.includes(myId) ? prev : [...prev, myId]);
+    }
+
+    if (isOwnPending) {
+      ownSubmittedAnswerRef.current = pending;
+      setHasAnswered(true);
+      setWantsToAnswer(false);
+    } else if (isOwnActive && !pending) {
+      setHasAnswered(false);
+      setWantsToAnswer(true);
+      setUserAnswer(prev => prev || loadAnswerDraft(myId, categoryIndex, questionIndex));
+    } else if (data.activeAnswererId && data.activeAnswererId !== myId) {
+      setWantsToAnswer(false);
+      setHasAnswered(false);
+      setUserAnswer("");
+    }
+  }, [categoryIndex, questionIndex, myId]);
+
   const explanation = question?.explanation || { title: "", text: "", image: "" };
   const questionImage = question?.questionImage || question?.image;
 
-  if (!question) {
-    return (
-      <div className="question-view-container">
-        <div className="qv-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <p style={{ color: 'var(--text-secondary)' }}>Загрузка вопроса...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Сброс при новом вопросе
+  // Сброс только при смене вопроса. timerStart может меняться после неверного ответа,
+  // когда таймер продолжает идти с сохраненного времени.
   useEffect(() => {
     setStep('answering');
     setTimeLeft(timerDuration || 30);
-    setStoppedTimeLeft(null);
     setIsLowTime(false);
     setSelectedPlayer(null);
     setUserAnswer("");
     setHasAnswered(false);
     setHasAttempted(false);
+    setSelfLockedOut(false);
     setShowIncorrectNotice(false);
     setSpeaking(false);
     setWantsToAnswer(false);
-    setSubmittedAnswers([]);
     setPendingAnswer(null);
+    setAnswerResult(null);
+    setOwnAnswerResult(null);
     setActiveAnswerer(null);
     setBlockedPlayers([]);
     setAttemptedPlayers([]);
-    setAnswerTimeLeft(15);
-    setIsAnswerTimerRunning(false);
-    setIsTimerPaused(false);
-    setTrainingExplanationVisible(false);
     answerSubmittingRef.current = false;
-  }, [question, categoryIndex, price, timerStart, timerDuration]);
+    ownSubmittedAnswerRef.current = null;
+  }, [questionIndex, categoryIndex, price, question?.question]);
+
+  useEffect(() => {
+    applyQuestionSyncState(questionSyncState);
+  }, [questionSyncState, applyQuestionSyncState]);
+
+  useEffect(() => {
+    if (!wantsToAnswer || hasAnswered || activeAnswerer !== myId) return;
+    saveAnswerDraft(myId, categoryIndex, questionIndex, userAnswer);
+  }, [userAnswer, wantsToAnswer, hasAnswered, activeAnswerer, myId, categoryIndex, questionIndex]);
 
   // Основной таймер
   useEffect(() => {
-    if (!timerStart || step !== 'answering' || isTimerPaused || isAnswerTimerRunning) return;
+    if (!timerStart || step !== 'answering' || pendingAnswer) return;
     const updateTimer = () => {
       const elapsed = Math.floor((Date.now() - timerStart) / 1000);
       const remaining = Math.max(0, timerDuration - elapsed);
@@ -113,32 +183,7 @@ export default function QuestionView({
     updateTimer();
     const interval = setInterval(updateTimer, 100);
     return () => clearInterval(interval);
-  }, [timerStart, timerDuration, step, isTimerPaused, isAnswerTimerRunning]);
-
-  // Таймер 15 секунд
-  useEffect(() => {
-    if (!isAnswerTimerRunning) return;
-    const interval = setInterval(() => {
-      setAnswerTimeLeft((prev) => {
-        if (prev <= 1) {
-          if (!answerTimeoutSentRef.current) {
-            answerTimeoutSentRef.current = true;
-            const roomId = timeoutRoomIdRef.current || window.location.pathname.split("/").pop();
-            socket.emit("player-answer-timeout", { roomId, playerId: myId, playerName: timeoutPlayerNameRef.current || "Игрок" });
-          }
-          soundManager.playTimeUp();
-          setIsAnswerTimerRunning(false);
-          setWantsToAnswer(false);
-          setHasAnswered(false);
-          setUserAnswer("");
-          return 0;
-        }
-        if (prev <= 3) soundManager.playTimerTick();
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isAnswerTimerRunning]);
+  }, [timerStart, timerDuration, step, pendingAnswer]);
 
   // Авто-закрытие для ведущего после показа ответа
   useEffect(() => {
@@ -181,15 +226,17 @@ export default function QuestionView({
   useEffect(() => {
     const handlePauseTimer = (data) => {
       setAttemptedPlayers(data.attemptedPlayers || []);
+      setActiveAnswerer(data.playerId);
+      if (data.playerId === myId) {
+        setSelfLockedOut(true);
+        setHasAttempted(true);
+        hasAttemptedRef.current = true;
+      }
       if (data.playerId !== myId) {
-        if (data.timeLeft !== undefined) { setTimeLeft(data.timeLeft); setStoppedTimeLeft(data.timeLeft); }
-        setIsTimerPaused(true);
         // Если я тоже нажал — отменяю
-        if (wantsToAnswerRef.current || isAnswerTimerRunningRef.current) {
+        if (wantsToAnswerRef.current) {
           setWantsToAnswer(false);
-          setIsAnswerTimerRunning(false);
           setHasAnswered(false);
-          setHasAttempted(false);
           setUserAnswer("");
           setPendingAnswer(null);
         }
@@ -200,72 +247,107 @@ export default function QuestionView({
     const handleSubmitAnswer = (data) => {
       soundManager.playAnswerSubmit();
       setPendingAnswer(data);
-      setSubmittedAnswers((prev) => [...prev, data]);
-      if (data.playerId === myId) { setHasAnswered(true); setIsAnswerTimerRunning(false); setWantsToAnswer(false); setHasAttempted(true); }
+      if (typeof data.timeLeft === "number") setTimeLeft(data.timeLeft);
+      setAnswerResult(null);
+      if (data.playerId === myId) {
+        clearAnswerDraft(myId, categoryIndex, questionIndex);
+        ownSubmittedAnswerRef.current = data;
+        setSelfLockedOut(true);
+        setHasAnswered(true);
+        setWantsToAnswer(false);
+        setHasAttempted(true);
+        hasAttemptedRef.current = true;
+      }
     };
 
     const handlePlayerAnswerResult = (data) => {
+      const ownSubmitted = ownSubmittedAnswerRef.current;
+      const pending = pendingAnswerRef.current;
+      const isOwnResult =
+        data.playerId === myId ||
+        ownSubmitted?.playerId === data.playerId ||
+        (ownSubmitted && pending && pending.answer === ownSubmitted.answer && pending.playerName === ownSubmitted.playerName);
+      const submitted = pending?.playerId === data.playerId ? pending : (isOwnResult ? ownSubmitted : null);
+      const result = {
+        ...data,
+        answer: submitted?.answer || "",
+        playerName: data.playerName || submitted?.playerName || "Игрок",
+      };
+      setAnswerResult(result);
       setAttemptedPlayers(data.attemptedPlayers || []);
+      if (isOwnResult) {
+        clearAnswerDraft(myId, categoryIndex, questionIndex);
+        setSelfLockedOut(true);
+        setHasAttempted(true);
+        hasAttemptedRef.current = true;
+        setBlockedPlayers(prev => prev.includes(myId) ? prev : [...prev, myId]);
+        setOwnAnswerResult(result);
+      }
       if (data.isCorrect) {
         setSelectedPlayer(data.playerId);
         soundManager.playCorrectAnswer();
         setActiveAnswerer(null);
-        setIsTimerPaused(false);
         setStep('revealed');
         setHasAttempted(true);
       } else {
         soundManager.playIncorrectAnswer();
         setActiveAnswerer(null);
-        if (gameMode === "training") setTrainingExplanationVisible(true);
-        if (data.playerId === myId) {
+        if (isOwnResult) {
+          setSelfLockedOut(true);
           setHasAttempted(true);
+          hasAttemptedRef.current = true;
           setWantsToAnswer(false);
-          setIsAnswerTimerRunning(false);
-          setBlockedPlayers(prev => prev.includes(data.playerId) ? prev : [...prev, data.playerId]);
-          setAttemptedPlayers(prev => prev.includes(data.playerId) ? prev : [...prev, data.playerId]);
+          setBlockedPlayers(prev => prev.includes(myId) ? prev : [...prev, myId]);
+          setAttemptedPlayers(prev => prev.includes(myId) ? prev : [...prev, myId]);
         }
         setShowIncorrectNotice(true);
         const nonHost = playersRef.current.filter(p => p.id !== hostRef.current).map(p => p.id);
         const canStill = nonHost.some(id => !data.attemptedPlayers?.includes(id));
         if (!canStill) {
-          setIsTimerPaused(false); setIsAnswerTimerRunning(false); setWantsToAnswer(false);
+          setWantsToAnswer(false);
           setShowIncorrectNotice(false); setStep('revealed');
         } else {
-          const saved = data.stoppedTimeLeft ?? stoppedTimeLeftRef.current;
+          const saved = data.stoppedTimeLeft;
           const resumed = data.resumedTimerStart ?? null;
-          if (saved !== null && saved !== undefined) {
+          if (typeof saved === "number") {
             setTimerStart(resumed ?? Date.now() - ((timerDurationRef.current - saved) * 1000));
             setTimeLeft(saved);
           }
-          setStoppedTimeLeft(null);
-          setIsTimerPaused(false); setIsAnswerTimerRunning(false); setWantsToAnswer(false);
+          setWantsToAnswer(false);
           setShowIncorrectNotice(false); setStep('answering');
+          if (!isOwnResult) setAnswerResult(null);
         }
       }
-      setIsAnswerTimerRunning(false);
-      setAnswerTimeLeft(15);
       setPendingAnswer(null);
     };
 
     const handleRevealAnswer = (data) => {
-      console.log('[QV] reveal-answer received:', data);
-      setIsTimerPaused(false); setIsAnswerTimerRunning(false); setWantsToAnswer(false);
+      clearAnswerDraft(myId, categoryIndex, questionIndex);
+      setWantsToAnswer(false);
       setUserAnswer(""); setActiveAnswerer(null); setPendingAnswer(null); setShowIncorrectNotice(false);
       if (data.attemptedPlayers?.length > 0) {
         setAttemptedPlayers(data.attemptedPlayers);
         if (data.attemptedPlayers.includes(myId)) {
+          setSelfLockedOut(true);
           setHasAttempted(true);
+          hasAttemptedRef.current = true;
           setBlockedPlayers(prev => prev.includes(myId) ? prev : [...prev, myId]);
         }
       }
       setStep("revealed");
-      console.log('[QV] step changed to revealed');
     };
 
     const handleReject = (data) => {
       if (data.playerId === myId) {
-        setWantsToAnswer(false); setIsAnswerTimerRunning(false); setHasAttempted(false);
-        setHasAnswered(false); setIsTimerPaused(false); setPendingAnswer(null); setUserAnswer("");
+        const shouldUnlock = data.reason === "another_player_answering";
+        clearAnswerDraft(myId, categoryIndex, questionIndex);
+        setWantsToAnswer(false);
+        setSelfLockedOut(!shouldUnlock);
+        setHasAttempted(!shouldUnlock);
+        hasAttemptedRef.current = !shouldUnlock;
+        setHasAnswered(false);
+        setPendingAnswer(null);
+        setUserAnswer("");
       }
     };
 
@@ -289,67 +371,57 @@ export default function QuestionView({
       socket.off("reveal-answer", handleRevealAnswer);
       socket.off("player-answer-rejected", handleReject);
     };
-  }, [myId, gameMode]);
+  }, [myId, categoryIndex, questionIndex]);
 
   // Синхронизация для новых игроков
   useEffect(() => {
     const handleSync = (data) => {
-      if (data.attemptedPlayers?.length > 0) {
-        setAttemptedPlayers(data.attemptedPlayers);
-        if (data.attemptedPlayers.includes(myId)) {
-          setHasAttempted(true); setHasAnswered(false);
-          setBlockedPlayers(prev => prev.includes(myId) ? prev : [...prev, myId]);
-          setWantsToAnswer(false); setIsAnswerTimerRunning(false);
-        }
-      }
-      if (data.stoppedTimeLeft != null) { setIsTimerPaused(true); setTimeLeft(data.stoppedTimeLeft); setStoppedTimeLeft(data.stoppedTimeLeft); }
-      if (!data.timerPausedAt) setIsTimerPaused(false);
-      if (data.activeAnswererId) setActiveAnswerer(data.activeAnswererId);
+      applyQuestionSyncState(data);
     };
     socket.on("question-sync-state", handleSync);
     return () => socket.off("question-sync-state", handleSync);
-  }, [myId]);
+  }, [applyQuestionSyncState]);
 
   const handleAnswer = useCallback(() => {
     if (isHost) { alert("Ведущий не может отвечать!"); return; }
-    if (blockedPlayers.includes(myId) || attemptedPlayers.includes(myId) || hasAttemptedRef.current) return;
+    if (selfLockedOut || ownAnswerResult || blockedPlayers.includes(myId) || attemptedPlayers.includes(myId) || hasAttempted || hasAttemptedRef.current) return;
     if (activeAnswererRef.current && activeAnswererRef.current !== myId) return;
 
     soundManager.playClick();
     const player = playersRef.current.find(p => p.id === myId);
     const roomId = window.location.pathname.split('/').pop();
-    answerTimeoutSentRef.current = false;
-    timeoutRoomIdRef.current = roomId;
-    timeoutPlayerNameRef.current = player?.name || "Игрок";
 
-    const currentTimeLeft = timeLeft;
-    setStoppedTimeLeft(currentTimeLeft);
-    setIsTimerPaused(true);
-    setIsAnswerTimerRunning(true);
-    setAnswerTimeLeft(15);
-    setUserAnswer("");
+    setUserAnswer(loadAnswerDraft(myId, categoryIndex, questionIndex));
     setWantsToAnswer(true);
     setHasAttempted(true);
+    setSelfLockedOut(true);
+    hasAttemptedRef.current = true;
 
-    socket.emit("pause-timer", { roomId, playerId: myId, playerName: player?.name || "Игрок", timeLeft: currentTimeLeft });
-  }, [myId, isHost, timeLeft, blockedPlayers, attemptedPlayers]);
+    socket.emit("pause-timer", { roomId, playerId: myId, playerName: player?.name || "Игрок" });
+  }, [myId, isHost, selfLockedOut, ownAnswerResult, blockedPlayers, attemptedPlayers, hasAttempted, categoryIndex, questionIndex]);
 
   const handleSubmitAnswer = useCallback(() => {
-    if (!isAnswerTimerRunningRef.current) return;
+    if (!wantsToAnswerRef.current || step !== 'answering') return;
     if (answerSubmittingRef.current) return;
     answerSubmittingRef.current = true;
     const trimmed = userAnswer.trim();
     if (!trimmed) { answerSubmittingRef.current = false; return; }
 
     soundManager.playAnswerSubmit();
-    answerTimeoutSentRef.current = true;
-    setIsAnswerTimerRunning(false);
+    clearAnswerDraft(myId, categoryIndex, questionIndex);
     setHasAttempted(true);
+    setSelfLockedOut(true);
+    hasAttemptedRef.current = true;
 
     const player = playersRef.current.find(p => p.id === myId);
     const roomId = window.location.pathname.split('/').pop();
-    socket.emit("submit-player-answer", { roomId, playerId: myId, playerName: player?.name || "Игрок", answer: trimmed });
-  }, [myId, userAnswer]);
+    ownSubmittedAnswerRef.current = {
+      playerId: myId,
+      playerName: player?.name || "Игрок",
+      answer: trimmed,
+    };
+    socket.emit("submit-player-answer", { roomId, playerId: myId, playerName: player?.name || "Игрок", answer: trimmed, timeLeft });
+  }, [myId, userAnswer, timeLeft, categoryIndex, questionIndex]);
 
   const handleVerifyAnswer = useCallback((isCorrect) => {
     if (!pendingAnswer) return;
@@ -363,6 +435,18 @@ export default function QuestionView({
 
   const formatTime = (s) => s.toString().padStart(2, "0");
   const progress = timerDuration > 0 ? 339 - (timeLeft / timerDuration) * 339 : 339;
+  const activeAnswererName = pendingAnswer?.playerName || players.find(p => p.id === activeAnswerer)?.name || "Игрок";
+  const visibleSubmittedAnswer = pendingAnswer || (answerResult?.isCorrect ? answerResult : null);
+
+  if (!question) {
+    return (
+      <div className="question-view-container">
+        <div className="qv-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <p style={{ color: 'var(--text-secondary)' }}>Загрузка вопроса...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`question-view-container ${inline ? "qv-inline" : ""}`}
@@ -378,9 +462,6 @@ export default function QuestionView({
               <linearGradient id="timerUrgentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#f59e0b" /><stop offset="100%" stopColor="#ef4444" />
               </linearGradient>
-              <linearGradient id="answerTimerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#ec4899" /><stop offset="100%" stopColor="#f472b6" />
-              </linearGradient>
             </defs>
           </svg>
 
@@ -388,42 +469,23 @@ export default function QuestionView({
             <div className="qv-section fade-in">
               {questionImage && (
                 <div className="qv-image">
-                  <img src={resolveImageUrl(questionImage) || getFallbackImage('600/400', 31)} alt="Вопрос" loading="lazy" onError={(e) => { e.target.src = getFallbackImage('600/400', 31); }} />
+                  <ImageWithStatus src={questionImage} alt="Вопрос" loading="lazy" />
                 </div>
               )}
               <h2 className="qv-title">{question?.question}</h2>
 
-              {!isTimerPaused && !isAnswerTimerRunning && (
-                <div className={`qv-timer ${isLowTime ? "urgent" : ""}`}>
-                  <svg className="qv-timer-ring" viewBox="0 0 120 120">
-                    <circle className="qv-timer-bg" cx="60" cy="60" r="54" />
-                    <circle className="qv-timer-progress" cx="60" cy="60" r="54" style={{ strokeDashoffset: `${progress}px` }} />
-                  </svg>
-                  <span className="qv-timer-text">{formatTime(timeLeft)}<small>с</small></span>
-                </div>
-              )}
+              <div className={`qv-timer ${isLowTime ? "urgent" : ""}`}>
+                <svg className="qv-timer-ring" viewBox="0 0 120 120">
+                  <circle className="qv-timer-bg" cx="60" cy="60" r="54" />
+                  <circle className="qv-timer-progress" cx="60" cy="60" r="54" style={{ strokeDashoffset: `${progress}px` }} />
+                </svg>
+                <span className="qv-timer-text">{formatTime(timeLeft)}<small>с</small></span>
+              </div>
 
-              {showIncorrectNotice && !isTimerPaused && !isAnswerTimerRunning && (
+              {showIncorrectNotice && (
                 <div className="incorrect-answer-notice fade-in">
                   <span className="notice-icon">❌</span>
                   <p>Неверный ответ! Другой игрок может ответить</p>
-                </div>
-              )}
-
-              {isAnswerTimerRunning && !hasAnswered && wantsToAnswer && (
-                <div className="qv-timer answer-timer">
-                  <svg className="qv-timer-ring" viewBox="0 0 120 120">
-                    <circle className="qv-timer-bg" cx="60" cy="60" r="54" />
-                    <circle className="qv-timer-progress answer-timer-progress" cx="60" cy="60" r="54" style={{ strokeDashoffset: `${339 - (answerTimeLeft / 15) * 339}px` }} />
-                  </svg>
-                  <span className="qv-timer-text">{formatTime(answerTimeLeft)}<small>с</small></span>
-                </div>
-              )}
-
-              {isTimerPaused && !wantsToAnswer && !hasAnswered && (
-                <div className="timer-stopped-message fade-in">
-                  <p>Таймер остановлен</p>
-                  <p className="timer-stopped-subtitle">Другой игрок отвечает...</p>
                 </div>
               )}
 
@@ -431,42 +493,60 @@ export default function QuestionView({
                 <div className="player-answer-popup fade-in">
                   <p className="popup-title">Ваш ответ:</p>
                   <input ref={answerInputRef} type="text" className="popup-answer-input"
-                    value={userAnswer} disabled={!isAnswerTimerRunning}
+                    value={userAnswer}
                     onChange={(e) => setUserAnswer(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && isAnswerTimerRunning && handleSubmitAnswer()}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSubmitAnswer()}
                     placeholder="Введите ответ..." />
                   <button className="popup-submit-btn" onClick={handleSubmitAnswer}
-                    disabled={!userAnswer.trim() || !isAnswerTimerRunning}>✓ Отправить</button>
+                    disabled={!userAnswer.trim()}>✓ Отправить</button>
                 </div>
               )}
 
               {!isHost && step === 'answering' && (() => {
-                const alreadyAnswered = attemptedPlayers.includes(myId) || blockedPlayers.includes(myId) || hasAttemptedRef.current;
-                const isOtherAnswering = activeAnswererRef.current && activeAnswererRef.current !== myId;
+                const alreadyAnswered = selfLockedOut || Boolean(ownAnswerResult) || attemptedPlayers.includes(myId) || blockedPlayers.includes(myId) || hasAttempted || hasAttemptedRef.current;
+                const isOtherAnswering = activeAnswerer && activeAnswerer !== myId;
+                if (pendingAnswer) {
+                  const isMine = pendingAnswer.playerId === myId;
+                  return (
+                    <div className="player-answer-status fade-in">
+                      <p className="player-answer-status-title">{isMine ? "Ваш ответ отправлен" : `${activeAnswererName} ответил`}</p>
+                      <div className="player-answer-status-text">{pendingAnswer.answer}</div>
+                      <p className="player-answer-status-sub">Ожидание проверки ведущим</p>
+                    </div>
+                  );
+                }
+                if (ownAnswerResult && !ownAnswerResult.isCorrect) {
+                  return (
+                    <div className="player-answer-status incorrect fade-in">
+                      <p className="player-answer-status-title">Ваш ответ неверный</p>
+                      {ownAnswerResult.answer && <div className="player-answer-status-text">{ownAnswerResult.answer}</div>}
+                      <p className="player-answer-status-result">{isOtherAnswering ? `${activeAnswererName} отвечает` : "Другой игрок может ответить"}</p>
+                    </div>
+                  );
+                }
+                if (isOtherAnswering) return (
+                  <div className="other-player-answering fade-in">
+                    <p className="other-player-title">{activeAnswererName} отвечает</p>
+                    <p className="other-player-text">Ожидание ответа</p>
+                  </div>
+                );
                 if (alreadyAnswered) return null;
-                if (isOtherAnswering) return <div className="other-player-answering fade-in"><p className="other-player-text">Другой игрок отвечает...</p></div>;
                 return <button className="qv-answer-btn" onClick={handleAnswer}>✋ Ответить</button>;
               })()}
 
               {isHost && (
                 <div className="host-answer-info fade-in">
-                  <p className="host-info-text">Ожидайте ответы игроков...</p>
-                  {attemptedPlayers.length > 0 && (() => {
-                    const actualPlayers = players.filter(p => p.id !== host).length;
-                    return (
-                      <div className="host-answered-progress">
-                        <div className="progress-text">Ответили: {attemptedPlayers.length}/{actualPlayers}</div>
-                        <div className="progress-bar-container">
-                          <div className="progress-bar-fill" style={{ width: `${(attemptedPlayers.length / Math.max(1, actualPlayers)) * 100}%` }} />
-                        </div>
-                      </div>
-                    );
-                  })()}
+                  <p className="host-info-text">{activeAnswerer ? `${activeAnswererName} отвечает` : "Ожидайте игрока, который возьмет вопрос"}</p>
                 </div>
               )}
 
-              {isHost && submittedAnswers.length > 0 && (
-                <div className="host-answer-verification fade-in">
+              {isHost && pendingAnswer && (
+                <div className="host-answer-verification host-answer-verification-inline fade-in">
+                  <div className="host-submitted-answer">
+                    <span className="host-submitted-label">Ответ игрока</span>
+                    <div className="host-submitted-player">{activeAnswererName}</div>
+                    <div className="host-submitted-text">{pendingAnswer.answer}</div>
+                  </div>
                   <div className="verification-buttons">
                     <button className="verify-btn correct" onClick={() => handleVerifyAnswer(true)}>✓ Верно</button>
                     <button className="verify-btn incorrect" onClick={() => handleVerifyAnswer(false)}>✗ Неверно</button>
@@ -481,11 +561,18 @@ export default function QuestionView({
               <div className="revealed-content">
               {question.answerImage || explanation.image ? (
                 <div className="qv-image">
-                  <img src={resolveImageUrl(question.answerImage || explanation.image) || getFallbackImage('600/400', 32)} alt="Ответ" loading="lazy" onError={(e) => { e.target.src = getFallbackImage('600/400', 32); }} />
+                  <ImageWithStatus src={question.answerImage || explanation.image} alt="Ответ" loading="lazy" />
                 </div>
               ) : null}
                 <div className="revealed-main">
                   <h2 className="qv-title">{explanation.title || "Ответ"}</h2>
+                  {visibleSubmittedAnswer && (
+                    <div className={`player-answer-status revealed-answer-status ${answerResult?.isCorrect ? "correct" : ""}`}>
+                      <p className="player-answer-status-title">{visibleSubmittedAnswer.playerName || activeAnswererName} ответил</p>
+                      <div className="player-answer-status-text">{visibleSubmittedAnswer.answer}</div>
+                      {answerResult?.isCorrect && <p className="player-answer-status-result">Ответ верный</p>}
+                    </div>
+                  )}
                   {question.answer && (
                     <div className="qv-answer">
                       <span className="qv-answer-label">Правильный ответ</span>
@@ -505,22 +592,6 @@ export default function QuestionView({
                     </div>
                   )}
                 </div>
-                {submittedAnswers.length > 0 && (
-                  <div className="all-player-answers fade-in">
-                    <h3 className="answers-title"><Users size={18} /> Ответы игроков ({submittedAnswers.length})</h3>
-                    <div className="answers-list">
-                      {submittedAnswers.map((a, idx) => {
-                        const playerName = players.find(p => p.id === a.playerId)?.name || "Игрок";
-                        return (
-                          <div key={a.playerId + '-' + idx} className="player-answer-item">
-                            <span className="pa-player">{playerName}</span>
-                            <span className="pa-answer">{a.answer}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}

@@ -2,6 +2,9 @@ FROM node:24-bookworm AS builder
 
 WORKDIR /app
 
+ARG BUILD_ID=dev
+ENV VITE_BUILD_ID=${BUILD_ID}
+
 COPY frontend/package*.json ./
 RUN npm ci
 

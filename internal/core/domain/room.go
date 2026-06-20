@@ -33,8 +33,17 @@ type CurrentQuestion struct {
 	SpeechStart        int64           `json:"speechStart"`
 	ActiveAnswererID   string          `json:"activeAnswererId,omitempty"`
 	AttemptedAnswerers map[string]bool `json:"attemptedAnswerers"`
+	PendingAnswer      *PendingAnswer  `json:"pendingAnswer,omitempty"`
 	StoppedTimeLeft    *int            `json:"stoppedTimeLeft,omitempty"`
 	TimerPausedAt      *int64          `json:"timerPausedAt,omitempty"`
+}
+
+type PendingAnswer struct {
+	PlayerID   string `json:"playerId"`
+	PlayerName string `json:"playerName"`
+	Answer     string `json:"answer"`
+	TimeLeft   int    `json:"timeLeft"`
+	Timestamp  int64  `json:"timestamp"`
 }
 
 type TrainingState struct {

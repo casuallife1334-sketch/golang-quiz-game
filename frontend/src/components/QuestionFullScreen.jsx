@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { resolveImageUrl, getFallbackImage } from "../utils/imageUtils.js";
+import ImageWithStatus from "./ImageWithStatus";
 import "../styles/question-fullscreen.css";
 
 export default function QuestionFullScreen({
@@ -114,7 +114,7 @@ export default function QuestionFullScreen({
             <div className="qfs-section fade-in">
               {situation.image && (
                 <div className="qfs-image">
-                  <img src={resolveImageUrl(situation.image) || getFallbackImage('400/300', 30)} alt="Ситуация" loading="lazy" onError={(e) => e.target.src = getFallbackImage('400/300', 30)} />
+                  <ImageWithStatus src={situation.image} alt="Ситуация" loading="lazy" />
                 </div>
               )}
               <h2 className="qfs-title">{situation.title || "Ситуация"}</h2>
@@ -134,7 +134,7 @@ export default function QuestionFullScreen({
             <div className="qfs-section fade-in">
               {question.image && (
                 <div className="qfs-image">
-                  <img src={resolveImageUrl(question.image) || getFallbackImage('400/300', 31)} alt="Вопрос" loading="lazy" onError={(e) => e.target.src = getFallbackImage('400/300', 31)} />
+                  <ImageWithStatus src={question.image} alt="Вопрос" loading="lazy" />
                 </div>
               )}
               <h2 className="qfs-title">{question.question || "Вопрос"}</h2>
@@ -171,7 +171,7 @@ export default function QuestionFullScreen({
             <div className="qfs-section fade-in">
               {explanation.image && (
                 <div className="qfs-image">
-                  <img src={resolveImageUrl(explanation.image) || getFallbackImage('400/300', 32)} alt="Пояснение" loading="lazy" onError={(e) => e.target.src = getFallbackImage('400/300', 32)} />
+                  <ImageWithStatus src={explanation.image} alt="Пояснение" loading="lazy" />
                 </div>
               )}
               <h2 className="qfs-title">{explanation.title || "Ответ"}</h2>

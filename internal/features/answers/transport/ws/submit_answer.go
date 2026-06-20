@@ -14,12 +14,13 @@ func (h *AnswersWSHandler) SubmitAnswer(ctx context.Context, session core_ws.Ses
 		RoomID     string `json:"roomId"`
 		PlayerName string `json:"playerName"`
 		Answer     string `json:"answer"`
+		TimeLeft   int    `json:"timeLeft"`
 	}
 	if err := json.Unmarshal(payload, &request); err != nil {
 		return err
 	}
 
-	room, err := h.answersService.SubmitAnswer(ctx, request.RoomID, session.ID(), request.Answer)
+	room, err := h.answersService.SubmitAnswer(ctx, request.RoomID, session.ID(), request.PlayerName, request.Answer, request.TimeLeft)
 	if err != nil {
 		return err
 	}
@@ -28,6 +29,7 @@ func (h *AnswersWSHandler) SubmitAnswer(ctx context.Context, session core_ws.Ses
 		"playerId":   session.ID(),
 		"playerName": request.PlayerName,
 		"answer":     request.Answer,
+		"timeLeft":   request.TimeLeft,
 		"timestamp":  time.Now().UnixMilli(),
 	}})
 	return nil

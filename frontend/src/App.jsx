@@ -4,7 +4,9 @@ import Menu from "./screens/Menu";
 import Join from "./screens/Join";
 import Lobby from "./screens/Lobby";
 import Constructor from "./screens/Constructor";
+import "./storage/appStorageBootstrap";
 import "./styles/global.css";
+import { getUserProfile } from "./userProfile";
 
 function AutoJoin() {
   const navigate = useNavigate();
@@ -17,8 +19,8 @@ function AutoJoin() {
 
     if (roomFromUrl) {
       setAttempted(true);
-      const savedProfile = localStorage.getItem("quiz-profile");
-      if (savedProfile) {
+      const savedProfile = getUserProfile();
+      if (savedProfile?.name) {
         navigate(`/join/player?room=${roomFromUrl}&auto=true`);
       } else {
         navigate(`/join/player?room=${roomFromUrl}`);

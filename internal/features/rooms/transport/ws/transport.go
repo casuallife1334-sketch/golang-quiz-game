@@ -30,7 +30,7 @@ func NewRoomsWSHandler(roomsService RoomsService, hub realtime.RoomHub) *RoomsWS
 	return &RoomsWSHandler{
 		roomsService:       roomsService,
 		hub:                hub,
-		disconnectGrace:    5 * time.Second,
+		disconnectGrace:    30 * time.Second,
 		pendingDisconnects: map[string]context.CancelFunc{},
 	}
 }
