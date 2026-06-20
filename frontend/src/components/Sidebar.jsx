@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { Copy, FileBarChart, Wifi, WifiOff, Crown, MessageSquare, Users, Settings, Trophy } from "lucide-react";
+import { Copy, FileBarChart, Crown, MessageSquare, Users, Settings } from "lucide-react";
 import Chat from "./Chat";
-import PlayerAnswerFeed from "./PlayerAnswerFeed";
-import TopPlayersReport from "./TopPlayersReport";
 import EndGameButton from "./EndGameButton";
 import "../styles/sidebar.css";
 
@@ -104,9 +102,6 @@ export default function Sidebar({ roomId, copyLink, isConnected, onShowReport, h
             </div>
           )}
         </div>
-
-        {/* Top Players Report - hidden per request */}
-        {/* <TopPlayersReport scores={scores} players={players} /> */}
 
         {/* Players Tab - only if showPlayersInSidebar is true */}
         {showPlayersInSidebar && (
@@ -219,8 +214,6 @@ export default function Sidebar({ roomId, copyLink, isConnected, onShowReport, h
 
             </div>
           )}
-
-          <PlayerAnswerFeed />
         </div>
       </div>
     </div>

@@ -13,10 +13,14 @@ func (s *AnswersService) VerifyAnswer(ctx context.Context, roomID string, hostID
 	var revealAnswer bool
 	var reason string
 	var resumed *int64
+	var stoppedTimeLeft *int
 
 	updatedRoom, err := s.roomsRepository.UpdateRoomByID(ctx, roomID, func(room *domain.Room) error {
 		if room.HostID != hostID {
 			return errors.New("only host can verify answer")
+		}
+		if room.GameMode != domain.GameModeCustom {
+			return errors.New("custom game mode required")
 		}
 		if room.CurrentQuestion == nil {
 			return errors.New("question is not active")
@@ -32,7 +36,9 @@ func (s *AnswersService) VerifyAnswer(ctx context.Context, roomID string, hostID
 		}
 
 		room.CurrentQuestion.ActiveAnswererID = ""
+		room.CurrentQuestion.PendingAnswer = nil
 		room.CurrentQuestion.TimerPausedAt = nil
+		stoppedTimeLeft = room.CurrentQuestion.StoppedTimeLeft
 		nextCanStillAnswer = canStillAnswer(room)
 		revealAnswer = isCorrect || !nextCanStillAnswer
 		reason = ""
@@ -44,6 +50,10 @@ func (s *AnswersService) VerifyAnswer(ctx context.Context, roomID string, hostID
 
 		if nextCanStillAnswer && !isCorrect {
 			resumed = resumedTimerStart(room)
+			if resumed != nil {
+				room.CurrentQuestion.TimerStart = *resumed
+			}
+			room.CurrentQuestion.StoppedTimeLeft = nil
 		}
 		return nil
 	})
@@ -58,7 +68,7 @@ func (s *AnswersService) VerifyAnswer(ctx context.Context, roomID string, hostID
 		CanStillAnswer:    nextCanStillAnswer,
 		RevealAnswer:      revealAnswer,
 		RevealReason:      reason,
-		StoppedTimeLeft:   updatedRoom.CurrentQuestion.StoppedTimeLeft,
+		StoppedTimeLeft:   stoppedTimeLeft,
 		ResumedTimerStart: resumed,
 	}, nil
 }

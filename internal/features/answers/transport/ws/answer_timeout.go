@@ -23,22 +23,18 @@ func (h *AnswersWSHandler) AnswerTimeout(ctx context.Context, session core_ws.Se
 	}
 
 	h.hub.Broadcast(result.Room.ID, realtime.Event{Type: "player-answer-result", Payload: map[string]interface{}{
-		"playerId":          session.ID(),
-		"playerName":        request.PlayerName,
-		"isCorrect":         false,
-		"correctAnswer":     result.Room.CurrentQuestion.Question.Answer,
-		"points":            0,
-		"stoppedTimeLeft":   result.StoppedTimeLeft,
-		"resumedTimerStart": result.ResumedTimerStart,
-		"attemptedPlayers":  result.AttemptedPlayers,
+		"playerId":         session.ID(),
+		"playerName":       request.PlayerName,
+		"isCorrect":        false,
+		"correctAnswer":    result.Room.CurrentQuestion.Question.Answer,
+		"points":           0,
+		"attemptedPlayers": result.AttemptedPlayers,
 	}})
 	if result.RevealAnswer {
 		h.hub.Broadcast(result.Room.ID, realtime.Event{Type: "reveal-answer", Payload: map[string]interface{}{
 			"reason":           result.RevealReason,
 			"attemptedPlayers": result.AttemptedPlayers,
 			"activeAnswererId": result.Room.CurrentQuestion.ActiveAnswererID,
-			"stoppedTimeLeft":  result.StoppedTimeLeft,
-			"timerPausedAt":    result.Room.CurrentQuestion.TimerPausedAt,
 		}})
 	}
 	return nil

@@ -7,7 +7,7 @@ import (
 )
 
 func canPlayerAnswer(room *domain.Room, playerID string) bool {
-	if room == nil || room.CurrentQuestion == nil || playerID == "" || playerID == room.HostID {
+	if room == nil || room.GameMode != domain.GameModeCustom || room.CurrentQuestion == nil || playerID == "" || playerID == room.HostID {
 		return false
 	}
 	for _, player := range room.Players {

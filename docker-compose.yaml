@@ -21,6 +21,8 @@ services:
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/frontend/Dockerfile
+      args:
+        BUILD_ID: ${BUILD_ID:-dev}
     container_name: quizgame-frontend
     depends_on:
       quizgame-backend:

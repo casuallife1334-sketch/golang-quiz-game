@@ -28,8 +28,3 @@ export function resolveImageUrl(imagePath) {
   // Relative paths -> public/images/ prefix (Vite serves public/ at root)
   return `/images/${trimmed}`;
 }
-
-// For backward compat - fallback generator
-export function getFallbackImage(size = '600x400', seed = 10) {
-  return `https://picsum.photos/${size}?random=${seed}`;
-}

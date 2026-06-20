@@ -20,6 +20,10 @@ func cloneRoom(room *domain.Room) *domain.Room {
 		for playerID, attempted := range room.CurrentQuestion.AttemptedAnswerers {
 			current.AttemptedAnswerers[playerID] = attempted
 		}
+		if room.CurrentQuestion.PendingAnswer != nil {
+			pending := *room.CurrentQuestion.PendingAnswer
+			current.PendingAnswer = &pending
+		}
 		clone.CurrentQuestion = &current
 	}
 	if room.TrainingState != nil {
