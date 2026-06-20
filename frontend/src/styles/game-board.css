@@ -7,6 +7,8 @@
   grid-template-columns: repeat(5, 1fr);
   gap: 16px;
   padding: 24px;
+  min-height: min-content;
+  overflow: visible;
 }
 
 .game-board-empty {
@@ -35,6 +37,8 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 0;
+  min-height: 0;
   animation: columnEntrance 0.5s ease backwards;
 }
 
@@ -99,6 +103,7 @@
   flex-direction: column;
   gap: 12px;
   flex: 1;
+  min-height: 0;
 }
 
 /* Question Cell */
@@ -299,7 +304,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .game-board {
     grid-template-columns: repeat(2, 1fr);
   }

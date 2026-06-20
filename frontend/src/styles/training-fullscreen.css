@@ -6,6 +6,7 @@
   inset: 0 !important;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   z-index: 10000 !important;
   background: radial-gradient(ellipse at center, #1e1b4b 0%, #0f0f23 45%, #000000 100%);
   display: flex;
@@ -32,12 +33,16 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  min-height: 0;
 }
 
 .slideshow-container {
   width: 100%;
   max-width: 1140px;
+  height: min(95vh, 900px);
+  height: min(95dvh, 900px);
   max-height: 95vh;
+  max-height: 95dvh;
   background: rgba(17, 17, 38, 0.98);
   backdrop-filter: blur(32px);
   border-radius: 34px;
@@ -49,6 +54,9 @@
   position: relative;
   z-index: 2;
   animation: slideshowAppear 0.8s cubic-bezier(0.25, 0.95, 0.35, 1);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 @keyframes slideshowAppear {
@@ -114,11 +122,14 @@
 
 /* ==================== СЛАЙДЫ ==================== */
 .slideshow-slide {
-  min-height: 640px;
+  min-height: 0;
+  height: 100%;
   padding: 3.2rem 3.8rem;
   display: flex;
   flex-direction: column;
   color: #e0e7ff;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .fade-in {
@@ -487,10 +498,65 @@
   .slideshow-slide { padding: 2.4rem 2.8rem; }
 }
 
-@media (max-width: 768px) {
-  .slideshow-container { border-radius: 26px; }
-  .slideshow-slide { padding: 2rem 1.8rem; min-height: 580px; }
+@media (max-width: 640px) {
+  .training-fullscreen-container {
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .slideshow-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .slideshow-container {
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .slideshow-slide {
+    padding: 4.25rem 1rem calc(1.25rem + var(--safe-bottom));
+  }
+
+  .slideshow-skip-btn {
+    top: 12px;
+    right: 12px;
+    padding: 8px 14px;
+    font-size: 0.82rem;
+  }
+
+  .slideshow-nav-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .slideshow-prev-btn { left: 10px; }
+  .slideshow-next-btn { right: 10px; }
   
   .question-text { font-size: 1.55rem; }
   .intro-title { font-size: 2rem; }
+
+  .answer-input {
+    padding: 15px 16px;
+    font-size: 1rem;
+  }
+
+  .submit-answer-btn {
+    width: 100%;
+    padding: 15px 18px;
+  }
+
+  .player-status-item,
+  .top-answer-item {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .verify-buttons {
+    width: 100%;
+    margin-left: 0;
+  }
 }

@@ -466,21 +466,25 @@ export default function QuestionView({
           </svg>
 
 {step === 'answering' && (
-            <div className="qv-section fade-in">
+            <div className={`qv-section qv-question-layout fade-in ${questionImage ? "has-image" : ""}`}>
               {questionImage && (
-                <div className="qv-image">
-                  <ImageWithStatus src={questionImage} alt="Вопрос" loading="lazy" />
+                <div className="qv-media">
+                  <div className="qv-image">
+                    <ImageWithStatus src={questionImage} alt="Вопрос" loading="lazy" />
+                  </div>
                 </div>
               )}
-              <h2 className="qv-title">{question?.question}</h2>
 
-              <div className={`qv-timer ${isLowTime ? "urgent" : ""}`}>
-                <svg className="qv-timer-ring" viewBox="0 0 120 120">
-                  <circle className="qv-timer-bg" cx="60" cy="60" r="54" />
-                  <circle className="qv-timer-progress" cx="60" cy="60" r="54" style={{ strokeDashoffset: `${progress}px` }} />
-                </svg>
-                <span className="qv-timer-text">{formatTime(timeLeft)}<small>с</small></span>
-              </div>
+              <div className="qv-main">
+                <h2 className="qv-title">{question?.question}</h2>
+
+                <div className={`qv-timer ${isLowTime ? "urgent" : ""}`}>
+                  <svg className="qv-timer-ring" viewBox="0 0 120 120">
+                    <circle className="qv-timer-bg" cx="60" cy="60" r="54" />
+                    <circle className="qv-timer-progress" cx="60" cy="60" r="54" style={{ strokeDashoffset: `${progress}px` }} />
+                  </svg>
+                  <span className="qv-timer-text">{formatTime(timeLeft)}<small>с</small></span>
+                </div>
 
               {showIncorrectNotice && (
                 <div className="incorrect-answer-notice fade-in">
@@ -553,6 +557,7 @@ export default function QuestionView({
                   </div>
                 </div>
               )}
+              </div>
             </div>
           )}
 

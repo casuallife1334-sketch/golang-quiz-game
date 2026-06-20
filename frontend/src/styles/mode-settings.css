@@ -3,20 +3,25 @@
 .mode-settings-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px;
+  gap: 10px;
+  padding: 10px 16px;
   background: rgba(18, 18, 24, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  margin: 16px 0;
+  border-radius: 14px;
+  margin: 8px 0;
+}
+
+.mode-settings-compact {
+  display: grid;
+  grid-template-columns: minmax(260px, 380px) 1fr;
+  align-items: center;
+  gap: 12px;
 }
 
 /* Mode Tabs */
 .mode-tabs {
   display: flex;
-  gap: 8px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 6px;
 }
 
 .mode-tab {
@@ -24,13 +29,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 20px;
+  gap: 7px;
+  padding: 9px 12px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
+  border-radius: 10px;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -46,29 +51,87 @@
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
   border-color: rgba(99, 102, 241, 0.4);
   color: white;
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 3px 12px rgba(99, 102, 241, 0.22);
 }
 
 .mode-tab svg {
   flex-shrink: 0;
 }
 
+.mode-settings-summary {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 0;
+}
+
+.mode-settings-summary > span {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mode-settings-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.74);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.mode-settings-toggle:hover {
+  border-color: rgba(99, 102, 241, 0.32);
+  background: rgba(99, 102, 241, 0.12);
+  color: white;
+}
+
+.mode-settings-toggle svg:last-child {
+  transition: transform 0.2s ease;
+}
+
+.mode-settings-toggle.open svg:last-child {
+  transform: rotate(180deg);
+}
+
+.mode-settings-content {
+  display: none;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.mode-settings-content.open {
+  display: block;
+}
+
 /* Mode Settings Panel */
 .mode-settings-panel {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
 .mode-settings-header {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
 }
 
 .mode-icon {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -90,29 +153,29 @@
 
 .mode-settings-header h3 {
   margin: 0 0 4px 0;
-  font-size: 1.1rem;
+  font-size: 0.98rem;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.9);
 }
 
 .mode-settings-header p {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   color: rgba(255, 255, 255, 0.5);
 }
 
 /* Settings Grid */
 .mode-settings-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
 }
 
 /* Setting Card */
 .setting-card {
   display: flex;
-  gap: 16px;
-  padding: 16px;
+  gap: 10px;
+  padding: 10px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
@@ -125,8 +188,8 @@
 }
 
 .setting-icon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -140,12 +203,12 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   min-width: 0;
 }
 
 .setting-content label {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.8);
 }
@@ -153,7 +216,7 @@
 .setting-content input[type="number"],
 .setting-content select {
   width: 100%;
-  padding: 10px 12px;
+  padding: 8px 10px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
@@ -175,7 +238,7 @@
 }
 
 .setting-hint {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: rgba(255, 255, 255, 0.4);
   line-height: 1.4;
 }
@@ -237,6 +300,14 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .mode-settings-compact {
+    grid-template-columns: 1fr;
+  }
+
+  .mode-settings-summary {
+    justify-content: space-between;
+  }
+
   .mode-settings-grid {
     grid-template-columns: 1fr;
   }

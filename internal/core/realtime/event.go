@@ -7,6 +7,7 @@ type Event struct {
 
 type RoomHub interface {
 	JoinRoom(roomID string, client Client)
+	LeaveRoom(roomID string, clientID string)
 	Broadcast(roomID string, event Event)
 	BroadcastExcept(roomID string, exceptClientID string, event Event)
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, FileBarChart, Crown, MessageSquare, Users, Settings } from "lucide-react";
+import { Copy, FileBarChart, Crown, MessageSquare, Users, Settings, LogOut } from "lucide-react";
 import Chat from "./Chat";
 import EndGameButton from "./EndGameButton";
 import "../styles/sidebar.css";
@@ -25,7 +25,7 @@ function getInitials(name) {
     .slice(0, 2);
 }
 
-export default function Sidebar({ roomId, copyLink, isConnected, onShowReport, hasGame, host, players, scores, isOpen, onOpenChange, showPlayersInSidebar = true, isHost, onEndGame }) {
+export default function Sidebar({ roomId, copyLink, isConnected, onShowReport, hasGame, host, players, scores, isOpen, onOpenChange, showPlayersInSidebar = true, isHost, onEndGame, onLeaveRoom }) {
   const [activeTab, setActiveTab] = useState("chat");
 
   const hostPlayer = players?.find(p => p.id === host);
@@ -182,11 +182,7 @@ export default function Sidebar({ roomId, copyLink, isConnected, onShowReport, h
               </div>
 
               <button
-                style={{
-                  width: "100%", padding: "12px 16px", border: "none", borderRadius: "12px",
-                  background: "var(--gradient)", color: "white", fontSize: "0.85rem", fontWeight: 600,
-                  cursor: "pointer", marginBottom: "8px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px"
-                }}
+                className="room-action-button copy"
                 onClick={copyLink}
               >
                 <Copy size={16} strokeWidth={2.5} />
@@ -194,16 +190,19 @@ export default function Sidebar({ roomId, copyLink, isConnected, onShowReport, h
               </button>
 
               <button
-                style={{
-                  width: "100%", padding: "12px 16px", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "12px",
-                  background: "rgba(16,185,129,0.1)", color: "#10b981", fontSize: "0.85rem", fontWeight: 600,
-                  cursor: "pointer", opacity: 1,
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: "8px"
-                }}
+                className="room-action-button report"
                 onClick={onShowReport}
               >
                 <FileBarChart size={16} strokeWidth={2.5} />
                 Отчет игры
+              </button>
+
+              <button
+                className="room-action-button leave"
+                onClick={onLeaveRoom}
+              >
+                <LogOut size={16} strokeWidth={2.5} />
+                Выйти в меню
               </button>
 
               {isHost && onEndGame && (

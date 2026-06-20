@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Trophy, BookOpen, Sparkles, Frown, Clock, ArrowRight, Zap } from "lucide-react";
+import { Trophy, BookOpen, Sparkles, Frown, Clock, ArrowRight, Zap, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { HOST_SIGNAL, isHostSignalDuration } from "../utils/trainingTiming";
 import "../styles/mode-settings.css";
 
 export default function ModeSettings({ gameMode, settings, onUpdateSettings }) {
   const [activeTab, setActiveTab] = useState(gameMode);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const modes = [
     { id: "custom", name: "Своя игра", icon: Trophy },
@@ -287,25 +288,42 @@ export default function ModeSettings({ gameMode, settings, onUpdateSettings }) {
 
   return (
     <div className="mode-settings-container">
-      {/* Tabs */}
-      <div className="mode-tabs">
-        {modes.map((mode) => {
-          const IconComponent = mode.icon;
-          return (
-            <button
-              key={mode.id}
-              className={`mode-tab ${activeTab === mode.id ? "active" : ""}`}
-              onClick={() => handleModeChange(mode.id)}
-            >
-              <IconComponent size={18} strokeWidth={2} />
-              <span>{mode.name}</span>
-            </button>
-          );
-        })}
+      <div className="mode-settings-compact">
+        <div className="mode-tabs">
+          {modes.map((mode) => {
+            const IconComponent = mode.icon;
+            return (
+              <button
+                key={mode.id}
+                className={`mode-tab ${activeTab === mode.id ? "active" : ""}`}
+                onClick={() => handleModeChange(mode.id)}
+              >
+                <IconComponent size={16} strokeWidth={2} />
+                <span>{mode.name}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="mode-settings-summary">
+          <span>
+            {activeTab === "training"
+              ? "Обучение: последовательные вопросы"
+              : `Своя игра: ${settings.custom?.basePrice || 100} очков, ${settings.custom?.defaultTime || 30} сек`}
+          </span>
+          <button
+            type="button"
+            className={`mode-settings-toggle ${isExpanded ? "open" : ""}`}
+            onClick={() => setIsExpanded((value) => !value)}
+          >
+            <SlidersHorizontal size={16} strokeWidth={2.2} />
+            <span>Параметры</span>
+            <ChevronDown size={16} strokeWidth={2.2} />
+          </button>
+        </div>
       </div>
 
       {/* Content */}
-      <div className="mode-settings-content">
+      <div className={`mode-settings-content ${isExpanded ? "open" : ""}`}>
         {activeTab === "custom" && <CustomModeSettings />}
         {activeTab === "training" && <TrainingModeSettings />}
       </div>

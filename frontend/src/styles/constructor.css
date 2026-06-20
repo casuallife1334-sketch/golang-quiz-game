@@ -2,6 +2,7 @@
 
 .constructor {
   height: 100vh;
+  height: 100dvh;
   background: var(--bg);
   color: var(--text);
   display: flex;
@@ -19,6 +20,7 @@
   align-items: center;
   gap: 20px;
   box-shadow: var(--shadow-md);
+  flex-shrink: 0;
 }
 
 .title-input {
@@ -170,6 +172,7 @@
   display: flex;
   overflow: hidden;
   min-height: 0;
+  min-width: 0;
 }
 
 /* Sidebar */
@@ -260,9 +263,10 @@
   font-size: 1rem;
 }
 
-.add-q-btn {
+.category-block .add-q-btn {
   width: 100%;
   padding: 12px;
+  margin-bottom: 6px;
   background: var(--bg);
   border: 1px dashed var(--border);
   border-radius: var(--radius-sm);
@@ -328,6 +332,17 @@
   padding: 32px 16px;
 }
 
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.empty-state p {
+  margin: 0;
+}
+
 .no-q {
   padding: 16px;
   font-size: 0.85rem;
@@ -344,6 +359,7 @@
   backdrop-filter: var(--blur);
   overflow-y: auto;
   min-height: 0;
+  min-width: 0;
 }
 
 .form-title {
