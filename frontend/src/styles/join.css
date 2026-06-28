@@ -454,29 +454,34 @@
 /* Responsive */
 @media (max-width: 768px) {
   .join-screen {
-    padding: 0;
+    padding: 18px;
     height: 100dvh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    align-items: center;
   }
 
   .join-card {
-    border-radius: 0;
-    padding: calc(24px + var(--safe-top)) 24px calc(24px + var(--safe-bottom));
-    max-width: 100%;
-    box-shadow: none;
-    border: none;
+    border-radius: 24px;
+    padding: calc(58px + var(--safe-top)) 22px calc(22px + var(--safe-bottom));
+    max-width: 430px;
+    box-shadow: var(--shadow-xl), 0 0 0 1px rgba(var(--accent-rgb), 0.08);
+    border: 1px solid var(--glass-border);
+    background: rgba(18, 18, 24, 0.88);
   }
 
   .profile-section {
     flex-direction: column;
     align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
   }
 
   .avatar-preview {
-    width: 72px;
-    height: 72px;
-    min-width: 72px;
+    width: 88px;
+    height: 88px;
+    min-width: 88px;
+    margin: 0 auto;
   }
 
   .profile-fields {
@@ -489,13 +494,25 @@
 
   .input-field {
     width: 100%;
-    padding: 16px;
+    padding: 15px 16px 15px 46px;
     font-size: 1rem;
+  }
+
+  .input-icon {
+    left: 16px;
   }
 
   .join-title {
     font-size: 1.5rem;
+  }
+
+  .join-header {
     margin-bottom: 24px;
+  }
+
+  .join-icon-wrapper {
+    width: 62px;
+    height: 62px;
   }
 
   .btn-join {
@@ -520,6 +537,7 @@
   .back-nav {
     top: calc(12px + var(--safe-top));
     left: 12px;
+    padding: 9px 12px;
   }
 }
 

@@ -1,8 +1,9 @@
 #root {
-  max-width: 1280px;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  padding: 0;
 }
 
 .logo {
@@ -39,4 +40,50 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.mobile-blocked-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.mobile-blocked-card {
+  width: min(100%, 420px);
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(18, 18, 24, 0.92);
+  box-shadow: var(--shadow-lg);
+  text-align: left;
+}
+
+.mobile-blocked-card h1 {
+  margin: 0 0 10px;
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+
+.mobile-blocked-card p {
+  margin: 0 0 18px;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.mobile-blocked-card a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  width: 100%;
+  border-radius: 12px;
+  background: var(--gradient);
+  color: white;
+  font-weight: 800;
+  text-decoration: none;
 }

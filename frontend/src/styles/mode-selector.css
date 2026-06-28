@@ -68,6 +68,7 @@
 .mode-selector-header {
   text-align: center;
   margin-bottom: 2rem;
+  padding: 0 3.25rem;
 }
 
 .mode-selector-title {
@@ -218,17 +219,37 @@
 @media (max-width: 768px) {
   .mode-selector-overlay {
     padding: 1rem;
-    align-items: flex-end;
+    align-items: center;
+    justify-content: center;
   }
 
   .mode-selector-modal {
-    max-height: 85vh;
+    max-height: min(88vh, 720px);
     padding: 1.5rem;
-    border-radius: 20px 20px 0 0;
+    border-radius: 22px;
+  }
+
+  .mode-selector-close {
+    top: 0.9rem;
+    right: 0.9rem;
+    width: 38px;
+    height: 38px;
+    z-index: 2;
+  }
+
+  .mode-selector-header {
+    padding: 0 2.75rem;
+    margin-bottom: 1.25rem;
   }
 
   .mode-selector-title {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
+    line-height: 1.2;
+  }
+
+  .mode-selector-subtitle {
+    font-size: 0.9rem;
+    line-height: 1.45;
   }
 
   .mode-cards-grid {

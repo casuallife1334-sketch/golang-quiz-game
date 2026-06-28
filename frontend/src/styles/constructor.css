@@ -408,8 +408,14 @@
   animation: fadeInUp 0.4s ease;
 }
 
+.form-group:not(.settings) {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .form-group h3 {
-  margin: 0 0 14px;
+  margin: 0 0 2px;
   font-size: 1rem;
   font-weight: 600;
   color: var(--text);
@@ -436,6 +442,11 @@
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
+.form-group input[aria-invalid="true"] {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.16);
+}
+
 .form-group textarea {
   min-height: 90px;
 }
@@ -459,6 +470,73 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.number-field {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.form-group .number-field input {
+  padding-right: 52px;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.2;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.form-group .number-field input::-webkit-outer-spin-button,
+.form-group .number-field input::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+.number-field-controls {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  bottom: 6px;
+  width: 36px;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.number-field-controls button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0;
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  border-radius: 7px;
+  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.18), rgba(var(--accent-rgb), 0.08));
+  color: var(--text);
+  cursor: pointer;
+  transition: var(--transition-base);
+  pointer-events: auto;
+}
+
+.number-field-controls button:hover {
+  border-color: rgba(var(--accent-rgb), 0.55);
+  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.28), rgba(var(--accent-rgb), 0.14));
+  color: white;
+}
+
+.number-field-controls button:active {
+  transform: translateY(1px);
+}
+
+.field-error {
+  margin: 8px 0 0;
+  color: var(--danger);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .center-content {

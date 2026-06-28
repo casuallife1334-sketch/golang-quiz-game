@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
 import "../styles/question-modal.css";
 
+const getQuestionTime = (question) => {
+  if (question?.time === "" || question?.time == null) return 0;
+  const time = Number(question.time);
+  return Number.isFinite(time) ? time : 30;
+};
+
 export default function QuestionModal({ question, categoryIndex, price, onMarkUsed, onClose }) {
   const [step, setStep] = useState(0); // 0: ситуация, 1: вопрос, 2: ответ
   const [showAnswer, setShowAnswer] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(question?.time || 30);
+  const [timeLeft, setTimeLeft] = useState(getQuestionTime(question));
   const [isLowTime, setIsLowTime] = useState(false);
 
   const situation = question?.situation || { title: "", description: "", image: "" };
@@ -13,7 +19,7 @@ export default function QuestionModal({ question, categoryIndex, price, onMarkUs
   useEffect(() => {
     setShowAnswer(false);
     setStep(0);
-    setTimeLeft(question?.time || 30);
+    setTimeLeft(getQuestionTime(question));
     setIsLowTime(false);
   }, [question]);
 

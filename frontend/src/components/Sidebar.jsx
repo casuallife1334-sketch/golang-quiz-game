@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Copy, FileBarChart, Crown, MessageSquare, Users, Settings, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Copy, FileBarChart, Crown, MessageSquare, Users, Settings, LogOut, X } from "lucide-react";
 import Chat from "./Chat";
 import EndGameButton from "./EndGameButton";
 import "../styles/sidebar.css";
@@ -27,81 +27,132 @@ function getInitials(name) {
 
 export default function Sidebar({ roomId, copyLink, isConnected, onShowReport, hasGame, host, players, scores, isOpen, onOpenChange, showPlayersInSidebar = true, isHost, onEndGame, onLeaveRoom }) {
   const [activeTab, setActiveTab] = useState("chat");
+  const [isChatAvailable, setIsChatAvailable] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.matchMedia("(min-width: 900px) and (min-height: 720px)").matches;
+  });
 
   const hostPlayer = players?.find(p => p.id === host);
   const hostScore = host ? (scores?.[host] || 0) : 0;
+
+  const renderHostCard = ({ compact = false } = {}) => {
+    if (!hostPlayer) return null;
+
+    return (
+      <div style={{ marginTop: compact ? 0 : "auto", marginBottom: compact ? "12px" : 0, padding: "12px", background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.15)", borderRadius: "14px", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
+          <Crown size={14} strokeWidth={2} style={{ color: "rgba(251,191,36,0.7)" }} />
+          <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "rgba(251,191,36,0.7)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            Ведущий
+          </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{
+            width: "36px", height: "36px", borderRadius: "50%",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "0.9rem", fontWeight: 700, color: "white", overflow: "hidden",
+            border: "2px solid rgba(251,191,36,0.35)",
+            background: hostPlayer.avatar ? "transparent" : "linear-gradient(135deg, #f59e0b, #fbbf24)"
+          }}>
+            {hostPlayer.avatar ? (
+              <img src={hostPlayer.avatar} alt={hostPlayer.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              getInitials(hostPlayer.name)
+            )}
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "rgba(255,255,255,0.85)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {hostPlayer.name || "Ведущий"}
+            </div>
+            {hostScore > 0 && (
+              <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "rgba(251,191,36,0.8)" }}>
+                {hostScore} очков
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const mediaQuery = window.matchMedia("(min-width: 900px) and (min-height: 720px)");
+    const handleChange = (event) => setIsChatAvailable(event.matches);
+
+    setIsChatAvailable(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (!isChatAvailable && activeTab === "chat") {
+      setActiveTab("room");
+    }
+  }, [activeTab, isChatAvailable]);
 
   return (
     <div className={`sidebar ${isOpen ? "open" : ""}`} onClick={() => onOpenChange(true)}>
       {/* Tabs */}
       <div className="sidebar-tabs" onClick={(e) => e.stopPropagation()}>
-        <button
-          className={`sidebar-tab ${activeTab === "chat" ? "active" : ""}`}
-          onClick={() => setActiveTab("chat")}
-        >
-          <MessageSquare size={18} strokeWidth={2} />
-          Чат
-        </button>
-        {showPlayersInSidebar && (
+        {isChatAvailable && (
           <button
-            className={`sidebar-tab ${activeTab === "players" ? "active" : ""}`}
-            onClick={() => setActiveTab("players")}
+            className={`sidebar-tab ${activeTab === "chat" ? "active" : ""}`}
+            onClick={() => {
+              setActiveTab("chat");
+              onOpenChange(true);
+            }}
           >
+            <MessageSquare size={18} strokeWidth={2} />
+            Чат
+          </button>
+        )}
+        {showPlayersInSidebar && (
+            <button
+              className={`sidebar-tab ${activeTab === "players" ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab("players");
+                onOpenChange(true);
+              }}
+            >
             <Users size={18} strokeWidth={2} />
             Игроки
           </button>
         )}
         <button
-          className={`sidebar-tab ${activeTab === "room" ? "active" : ""}`}
-          onClick={() => setActiveTab("room")}
+          className={`sidebar-tab sidebar-room-trigger ${activeTab === "room" ? "active" : ""}`}
+          onClick={() => {
+            setActiveTab("room");
+            onOpenChange(true);
+          }}
         >
           <Settings size={18} strokeWidth={2} />
           Комната
+        </button>
+        <button
+          type="button"
+          className="sidebar-close"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenChange(false);
+          }}
+          aria-label="Закрыть панель"
+        >
+          <X size={18} strokeWidth={2.4} />
         </button>
       </div>
 
       {/* Content */}
       <div className="sidebar-content" onClick={(e) => e.stopPropagation()}>
         {/* Chat Tab */}
-        <div className={`sidebar-section chat-section ${activeTab === "chat" ? "active" : ""}`} style={{ padding: 0, display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-          <Chat roomId={roomId} />
-          {/* Host info under chat */}
-          {hostPlayer && (
-            <div style={{ marginTop: "auto", padding: "12px", background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.15)", borderRadius: "14px", flexShrink: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
-                <Crown size={14} strokeWidth={2} style={{ color: "rgba(251,191,36,0.7)" }} />
-                <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "rgba(251,191,36,0.7)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  Ведущий
-                </span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{
-                  width: "36px", height: "36px", borderRadius: "50%",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "0.9rem", fontWeight: 700, color: "white", overflow: "hidden",
-                  border: "2px solid rgba(251,191,36,0.35)",
-                  background: hostPlayer.avatar ? "transparent" : "linear-gradient(135deg, #f59e0b, #fbbf24)"
-                }}>
-                  {hostPlayer.avatar ? (
-                    <img src={hostPlayer.avatar} alt={hostPlayer.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  ) : (
-                    getInitials(hostPlayer.name)
-                  )}
-                </div>
-                <div>
-                  <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>
-                    {hostPlayer.name || "Ведущий"}
-                  </div>
-                  {hostScore > 0 && (
-                    <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "rgba(251,191,36,0.8)" }}>
-                      {hostScore} очков
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        {isChatAvailable && (
+          <div className={`sidebar-section chat-section ${activeTab === "chat" ? "active" : ""}`}>
+            <Chat roomId={roomId} />
+            {renderHostCard()}
+          </div>
+        )}
 
         {/* Players Tab - only if showPlayersInSidebar is true */}
         {showPlayersInSidebar && (
@@ -170,6 +221,8 @@ export default function Sidebar({ roomId, copyLink, isConnected, onShowReport, h
         <div className={`sidebar-section ${activeTab === "room" ? "active" : ""}`}>
           {roomId && (
             <div>
+              {!isChatAvailable && renderHostCard({ compact: true })}
+
               <div style={{ padding: "10px 16px", background: "rgba(99,102,241,0.08)", borderRadius: "14px", marginBottom: "12px", textAlign: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "center" }}>
                   <span style={{ fontSize: "0.65rem", fontWeight: 600, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.1em" }}>

@@ -92,6 +92,7 @@
   align-items: center;
   gap: 16px;
   margin-bottom: 32px;
+  padding: 0 56px;
 }
 
 .load-icon-wrapper {
@@ -348,12 +349,39 @@
 
 /* Responsive */
 @media (max-width: 560px) {
+  .load-game-screen {
+    align-items: center;
+    padding: 16px;
+    overflow-y: auto;
+  }
+
   .load-game-card {
-    padding: 40px 28px;
+    padding: 64px 20px 22px;
+    border-radius: 22px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .load-game-card .back-nav {
+    top: 14px;
+    left: 14px;
+    padding: 9px 12px;
+    max-width: 112px;
+  }
+
+  .load-header {
+    padding: 0 42px;
+    margin-bottom: 22px;
+  }
+
+  .load-icon-wrapper {
+    width: 58px;
+    height: 58px;
   }
 
   .load-header h2 {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
+    line-height: 1.2;
   }
 
   .load-upload-zone {

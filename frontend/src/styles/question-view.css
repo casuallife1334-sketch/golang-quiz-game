@@ -1113,13 +1113,17 @@
 @media (max-width: 640px) {
   .question-view-container {
     height: 100%;
+    max-height: 100%;
     min-height: 0;
+    overflow: hidden;
   }
 
   .qv-content {
-    padding: 10px 12px;
-    padding-bottom: calc(72px + var(--safe-bottom));
+    height: 100%;
+    max-height: 100%;
+    padding: 8px 10px;
     min-height: 0;
+    overflow: hidden;
   }
 
   .qv-header-simple {
@@ -1134,9 +1138,10 @@
 
   .qv-body {
     padding: 0;
-    align-items: flex-start;
-    justify-content: flex-start;
-    overflow-y: auto;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    min-height: 0;
   }
 
   .qv-section {
@@ -1144,7 +1149,10 @@
     padding: 0;
     align-items: stretch;
     text-align: left;
-    padding-bottom: 12px;
+    padding-bottom: 0;
+    max-height: 100%;
+    overflow: hidden;
+    justify-content: center;
   }
 
   .qv-question-layout.has-image {
@@ -1161,21 +1169,26 @@
   }
 
   .qv-title {
-    font-size: 1.2rem;
-    margin-bottom: 12px;
+    font-size: clamp(0.95rem, 4.2vw, 1.18rem);
+    margin-bottom: 8px;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .qv-image,
   .qv-image img {
     width: 100%;
-    max-height: 36vh;
+    max-height: 25vh;
     border-radius: var(--radius-md);
     margin-bottom: 0;
     object-fit: contain;
   }
 
   .qv-question-layout.has-image .qv-image img {
-    max-height: 38vh;
+    max-height: 23vh;
   }
 
   .player-answer-popup,
@@ -1191,8 +1204,8 @@
   }
 
   .qv-answer {
-    margin: 16px 0;
-    padding: 16px;
+    margin: 10px 0;
+    padding: 12px;
   }
 
   .qv-answer-label {
@@ -1200,12 +1213,13 @@
   }
 
   .qv-answer-text {
-    font-size: 1.1rem;
+    font-size: 1rem;
+    line-height: 1.35;
   }
 
   .qv-explanation {
-    margin: 16px 0;
-    padding: 16px;
+    margin: 10px 0;
+    padding: 12px;
   }
 
   .qv-explanation-label {
@@ -1213,14 +1227,19 @@
   }
 
   .qv-text {
-    font-size: 0.95rem;
+    font-size: 0.86rem;
+    line-height: 1.42;
+    display: -webkit-box;
+    -webkit-line-clamp: 7;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   /* Input/Buttons full width */
   .popup-answer-input {
     width: 100%;
-    padding: 16px;
-    font-size: 1.1rem;
+    padding: 13px;
+    font-size: 1rem;
     border-radius: var(--radius-md);
     margin-bottom: 12px;
   }
@@ -1228,8 +1247,8 @@
   .popup-submit-btn,
   .qv-answer-btn {
     width: 100%;
-    padding: 16px;
-    font-size: 1.1rem;
+    padding: 13px;
+    font-size: 1rem;
     border-radius: var(--radius-md);
   }
 
@@ -1259,28 +1278,28 @@
 
   /* Timer */
   .qv-timer {
-    width: 92px;
-    height: 92px;
-    margin: 8px auto 12px;
+    width: 68px;
+    height: 68px;
+    margin: 4px auto 8px;
   }
 
   .qv-timer-ring {
-    width: 92px;
-    height: 92px;
+    width: 68px;
+    height: 68px;
   }
 
   .qv-timer-text {
-    font-size: 1.5rem;
+    font-size: 1.08rem;
   }
 
   .qv-question-layout.has-image .qv-timer,
   .qv-question-layout.has-image .qv-timer-ring {
-    width: 88px;
-    height: 88px;
+    width: 64px;
+    height: 64px;
   }
 
   .qv-question-layout.has-image .qv-timer-text {
-    font-size: 1.45rem;
+    font-size: 1.02rem;
   }
 
   .qv-timer-text small {

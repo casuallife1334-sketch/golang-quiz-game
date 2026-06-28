@@ -5,6 +5,7 @@ import Join from "./screens/Join";
 import Lobby from "./screens/Lobby";
 import Constructor from "./screens/Constructor";
 import "./storage/appStorageBootstrap";
+import "./App.css";
 import "./styles/global.css";
 import { getUserProfile } from "./userProfile";
 
@@ -38,6 +39,38 @@ function AutoJoin() {
   );
 }
 
+function MobileBlockedConstructor() {
+  return (
+    <div className="mobile-blocked-screen">
+      <div className="mobile-blocked-card">
+        <h1>Конструктор доступен только на компьютере</h1>
+        <p>На телефоне можно создавать и проходить комнаты, но редактирование игр отключено.</p>
+        <a href="/">Вернуться в меню</a>
+      </div>
+    </div>
+  );
+}
+
+function ConstructorRoute() {
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 760px)").matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const mediaQuery = window.matchMedia("(max-width: 760px)");
+    const handleChange = (event) => setIsMobile(event.matches);
+
+    setIsMobile(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  return isMobile ? <MobileBlockedConstructor /> : <Constructor />;
+}
+
 function AppContent() {
   const [searchParams] = useSearchParams();
   const roomFromUrl = searchParams.get("room");
@@ -49,7 +82,7 @@ function AppContent() {
           <Route path="/" element={roomFromUrl ? <AutoJoin /> : <Menu />} />
           <Route path="/join/:type" element={<Join />} />
           <Route path="/lobby/:roomId" element={<Lobby />} />
-          <Route path="/constructor" element={<Constructor />} />
+          <Route path="/constructor" element={<ConstructorRoute />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
