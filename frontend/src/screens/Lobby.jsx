@@ -18,6 +18,26 @@ import { getUserProfile } from "../userProfile";
 import "../styles/lobby.css";
 import "../styles/training-fullscreen.css";
 
+function useMobileLayout() {
+  const [isMobileLayout, setIsMobileLayout] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 760px)").matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const mediaQuery = window.matchMedia("(max-width: 760px)");
+    const handleChange = (event) => setIsMobileLayout(event.matches);
+
+    setIsMobileLayout(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  return isMobileLayout;
+}
+
 function LobbyContent() {
   const { roomId } = useParams();
   const {
@@ -46,6 +66,7 @@ function LobbyContent() {
   const [showReport, setShowReport] = useState(false);
   const [selectedMode, setSelectedMode] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isMobileLayout = useMobileLayout();
 
   const navigate = useNavigate();
 
@@ -94,12 +115,44 @@ function LobbyContent() {
     });
   }, [players, host, isConnected, isHost, localGame, game, currentQuestion, screen, gameEnded]);
 
-  const copyLink = () => {
+  const copyTextToClipboard = async (text) => {
+    if (navigator.clipboard?.writeText && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (error) {
+        console.warn("[Lobby] Clipboard API failed, using fallback:", error);
+      }
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.top = "0";
+    textarea.style.left = "0";
+    textarea.style.opacity = "0";
+
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+
+    try {
+      return document.execCommand("copy");
+    } catch (error) {
+      console.warn("[Lobby] Clipboard fallback failed:", error);
+      return false;
+    } finally {
+      document.body.removeChild(textarea);
+    }
+  };
+
+  const copyLink = async () => {
     if (!roomId) return;
     const link = `${window.location.origin}/?room=${encodeURIComponent(roomId)}`;
-    navigator.clipboard.writeText(link)
-      .then(() => alert("Ссылка скопирована!"))
-      .catch(() => alert("Не удалось скопировать ссылку"));
+    const copied = await copyTextToClipboard(link);
+    alert(copied ? "Ссылка скопирована!" : "Не удалось скопировать ссылку");
   };
 
   const openQuestion = useCallback((question, categoryIndex, price, qIndex = 0) => {
@@ -193,6 +246,12 @@ function LobbyContent() {
       return () => clearTimeout(timer);
     }
   }, [localGame, isHost, screen, selectedMode, startGameWithCountdown]);
+
+  useEffect(() => {
+    if (isMobileLayout && screen === "constructor") {
+      setScreen("menu");
+    }
+  }, [isMobileLayout, screen]);
 const renderContent = () => {
   if (currentQuestion) {
     if (gameMode === "training") {
@@ -275,9 +334,11 @@ const renderContent = () => {
               <button className="main-button" onClick={() => setScreen("mode-select")}>
                 Выбрать режим и загрузить игру
               </button>
-              <button className="main-button secondary" onClick={() => setScreen("constructor")}>
-                Конструктор
-              </button>
+              {!isMobileLayout && (
+                <button className="main-button secondary" onClick={() => setScreen("constructor")}>
+                  Конструктор
+                </button>
+              )}
             </div>
           )}
           {!isHost && (
@@ -303,6 +364,10 @@ const renderContent = () => {
   };
 
   if (screen === "constructor") {
+    if (isMobileLayout) {
+      return null;
+    }
+
     return <Constructor goBack={() => setScreen("menu")} setGame={(newGame) => {
       setLocalGame(newGame);
       setScreen("menu");
@@ -388,19 +453,21 @@ const renderContent = () => {
               scores={scores}
               isOpen={sidebarOpen}
               onOpenChange={setSidebarOpen}
-              showPlayersInSidebar={false}
+              showPlayersInSidebar={isMobileLayout}
               isHost={canEndGame({ isHost })}
             />
           </div>
 
-          <PlayersPanel
-            players={players}
-            host={host}
-            scores={scores}
-            isConnected={isConnected}
-            currentQuestion={currentQuestion}
-            gameMode={gameMode}
-          />
+          {!isMobileLayout && (
+            <PlayersPanel
+              players={players}
+              host={host}
+              scores={scores}
+              isConnected={isConnected}
+              currentQuestion={currentQuestion}
+              gameMode={gameMode}
+            />
+          )}
 
           {showReport && (
             <div className="report-modal-overlay" onClick={() => setShowReport(false)}>

@@ -109,11 +109,9 @@ export default function PlayersPanel({ players, host, scores, isConnected, curre
             </span>
           </div>
 
-          {score > 0 && (
-            <div className="pp-bar">
-              <div className="pp-bar-fill" style={{ width: `${percent}%` }} />
-            </div>
-          )}
+          <div className="pp-bar">
+            <div className="pp-bar-fill" style={{ width: score > 0 ? `${percent}%` : "0%" }} />
+          </div>
         </div>
       </div>
     );

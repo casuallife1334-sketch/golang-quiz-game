@@ -306,62 +306,86 @@
 
 @media (max-width: 640px) {
   .game-board {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .category-header {
-    min-height: 50px;
-    padding: 12px;
-  }
-
-  .category-name {
-    font-size: 0.75rem;
-  }
-
-  .question-cell {
-    min-height: 65px;
-  }
-
-  .question-price {
-    font-size: 1.25rem;
-  }
-}
-
-@media (max-width: 520px) {
-  .game-board {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .category-column {
-    flex-direction: row;
-    align-items: center;
+    display: grid;
+    grid-template-columns: minmax(82px, 30%) minmax(0, 1fr);
+    align-items: stretch;
+    gap: 6px;
+    flex: 1 1 0;
+    min-height: 0;
   }
 
   .category-header {
-    min-width: 100px;
-    padding: 14px;
+    min-height: 0;
+    height: 100%;
+    padding: 8px;
+    border-radius: 10px;
+  }
+
+  .category-name {
+    font-size: 0.68rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
   }
 
   .questions-column {
-    flex-direction: row;
-    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+    gap: 6px;
+    min-height: 0;
   }
 
   .question-cell {
-    min-height: 55px;
-    flex: 1;
+    min-height: 0;
+    height: 100%;
+    border-radius: 10px;
+    padding: 4px;
   }
 
   .question-price {
-    font-size: 1.1rem;
+    font-size: 1rem;
+    line-height: 1.2;
+    letter-spacing: 0;
   }
 
-  .host-only-hint {
-    bottom: 130px;
-    font-size: 0.8rem;
-    padding: 10px 18px;
+  .question-cell:hover:not(.used):not(.disabled),
+  .question-cell:hover:not(.used):not(.disabled) .question-price {
+    transform: none;
+  }
+
+  .host-only-hint,
+  .training-mode-hint {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .game-board {
+    padding: 8px;
+    gap: 6px;
+  }
+
+  .category-column {
+    grid-template-columns: 74px minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .category-header,
+  .question-cell {
+    min-height: 0;
+  }
+
+  .question-price {
+    font-size: 0.9rem;
   }
 }
 

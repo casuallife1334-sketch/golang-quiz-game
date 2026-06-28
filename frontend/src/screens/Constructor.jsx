@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { migrateGame } from "../utils/gameMigration.js";
 import ModeSettings from "../components/ModeSettings";
 import ImageWithStatus from "../components/ImageWithStatus";
@@ -12,6 +13,46 @@ const safeClone = (obj) => {
   } catch {
     return JSON.parse(JSON.stringify(obj));
   }
+};
+
+const NUMBER_LIMITS = {
+  time: {
+    min: 15,
+    max: 200,
+    step: 1,
+    fallback: 30,
+    error: "Можно указать от 15 до 200 секунд.",
+  },
+  price: {
+    min: 100,
+    max: 2500,
+    step: 100,
+    fallback: 100,
+    error: "Можно указать от 100 до 2500 очков за вопрос.",
+  },
+};
+
+const TEXT_LIMITS = {
+  question: 300,
+  answer: 300,
+  "situation.title": 300,
+  "situation.description": 1000,
+  "explanation.title": 300,
+  "explanation.text": 1000,
+};
+
+const clampNumber = (value, { min, max }) => Math.min(max, Math.max(min, value));
+const getNumberFieldError = (field, value) => {
+  if (value === "") return "";
+  const limits = NUMBER_LIMITS[field];
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return limits.error;
+  return numericValue < limits.min || numericValue > limits.max ? limits.error : "";
+};
+const getTextLimit = (section, field) => TEXT_LIMITS[section ? `${section}.${field}` : field];
+const limitTextValue = (section, field, value) => {
+  const limit = getTextLimit(section, field);
+  return limit ? value.slice(0, limit) : value;
 };
 
 export default function Constructor({ goBack, setGame: onGameReady }) {
@@ -41,6 +82,7 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
   });
 
   const [selected, setSelected] = useState(null); // { cat: number, q: number }
+  const [fieldErrors, setFieldErrors] = useState({});
 
   // Автосохранение в localStorage
   useEffect(() => {
@@ -62,7 +104,7 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
   const updateSectionName = (catIndex, name) => {
     setGame((prev) => {
       const copy = safeClone(prev);
-      copy.categories[catIndex].name = name.trim();
+      copy.categories[catIndex].name = name;
       return copy;
     });
   };
@@ -88,8 +130,12 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
     const isTraining = game.gameMode === "training";
     const trainingQuestionTimeMs = getTrainingDurationMs(trainingSettings.explanationTime, 5);
     const trainingQuestionTimeSeconds = trainingQuestionTimeMs === null
-      ? 5
+      ? NUMBER_LIMITS.time.fallback
       : Math.round(trainingQuestionTimeMs / 1000);
+    const questionTime = isTraining
+      ? clampNumber(trainingQuestionTimeSeconds, NUMBER_LIMITS.time)
+      : clampNumber(customSettings.defaultTime || NUMBER_LIMITS.time.fallback, NUMBER_LIMITS.time);
+    const questionPrice = clampNumber(customSettings.basePrice || NUMBER_LIMITS.price.fallback, NUMBER_LIMITS.price);
 
     setGame((prev) => {
       const copy = safeClone(prev);
@@ -100,8 +146,8 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
         answer: "",
         explanation: { title: "", text: "", image: "" },
         answerImage: "",
-        time: isTraining ? trainingQuestionTimeSeconds : (customSettings.defaultTime || 30),
-        price: isTraining ? 0 : (customSettings.basePrice || 100),
+        time: questionTime,
+        price: questionPrice,
       });
       return copy;
     });
@@ -131,6 +177,10 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
   // ─── Обновление полей ───
   const updateField = (section, field, value) => {
     if (!selected) return;
+    if (field === "time" || field === "price") {
+      setFieldErrors((errors) => ({ ...errors, [field]: getNumberFieldError(field, value) }));
+    }
+    const nextValue = limitTextValue(section, field, value);
 
     setGame((prev) => {
       const copy = safeClone(prev);
@@ -138,23 +188,108 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
       if (!q) return prev;
 
       if (section === "situation") {
-        q.situation[field] = value;
+        q.situation[field] = nextValue;
       } else if (section === "explanation") {
-        q.explanation[field] = value;
+        q.explanation[field] = nextValue;
       } else if (field === "time") {
-        q[field] = Math.max(5, Math.min(180, Number(value) || 30));
+        const numericValue = Number(nextValue);
+        q[field] = nextValue === "" ? "" : (Number.isFinite(numericValue) ? numericValue : q[field]);
       } else if (field === "price") {
-        q[field] = Math.max(10, Number(value) || 100);
+        const numericValue = Number(nextValue);
+        q[field] = nextValue === "" ? "" : (Number.isFinite(numericValue) ? numericValue : q[field]);
       } else {
-        q[field] = value;
+        q[field] = nextValue;
       }
 
       return copy;
     });
   };
 
+  const stepNumberField = (field, delta, fallback) => {
+    if (!selected) return;
+    setFieldErrors((errors) => ({ ...errors, [field]: "" }));
+
+    setGame((prev) => {
+      const copy = safeClone(prev);
+      const q = copy.categories?.[selected.cat]?.questions?.[selected.q];
+      if (!q) return prev;
+
+      const limits = NUMBER_LIMITS[field];
+      const current = Number(q[field]);
+      const base = Number.isFinite(current) ? current : fallback;
+      q[field] = clampNumber(base + delta, limits);
+      return copy;
+    });
+  };
+
+  const normalizeNumberField = (field) => {
+    if (!selected) return;
+    setFieldErrors((errors) => ({ ...errors, [field]: "" }));
+
+    setGame((prev) => {
+      const copy = safeClone(prev);
+      const q = copy.categories?.[selected.cat]?.questions?.[selected.q];
+      if (!q) return prev;
+
+      const limits = NUMBER_LIMITS[field];
+      const numericValue = Number(q[field]);
+      q[field] = Number.isFinite(numericValue)
+        ? clampNumber(numericValue, limits)
+        : limits.fallback;
+      return copy;
+    });
+  };
+
+  const validateGameSettings = (gameToValidate) => {
+    for (const [catIndex, category] of gameToValidate.categories.entries()) {
+      for (const [qIndex, question] of (category.questions || []).entries()) {
+        const questionLabel = `${category.name || `Раздел ${catIndex + 1}`}, вопрос ${qIndex + 1}`;
+        const timeError = getNumberFieldError("time", question.time);
+        if (timeError || question.time === "") {
+          return `${questionLabel}: ${NUMBER_LIMITS.time.error}`;
+        }
+
+        const priceError = getNumberFieldError("price", question.price);
+        if (priceError || question.price === "") {
+          return `${questionLabel}: ${NUMBER_LIMITS.price.error}`;
+        }
+
+        if ((question.question || "").length > TEXT_LIMITS.question) {
+          return `${questionLabel}: текст вопроса не должен быть больше 300 символов.`;
+        }
+
+        if ((question.answer || "").length > TEXT_LIMITS.answer) {
+          return `${questionLabel}: правильный ответ не должен быть больше 300 символов.`;
+        }
+
+        if (gameToValidate.gameMode === "training") {
+          const trainingChecks = [
+            [question.situation?.title || "", TEXT_LIMITS["situation.title"], "заголовок ситуации"],
+            [question.situation?.description || "", TEXT_LIMITS["situation.description"], "описание ситуации"],
+            [question.explanation?.title || "", TEXT_LIMITS["explanation.title"], "заголовок пояснения"],
+            [question.explanation?.text || "", TEXT_LIMITS["explanation.text"], "текст пояснения"],
+          ];
+
+          for (const [text, limit, label] of trainingChecks) {
+            if (text.length > limit) {
+              return `${questionLabel}: ${label} не должен быть больше ${limit} символов.`;
+            }
+          }
+        }
+      }
+    }
+
+    return "";
+  };
+
   // ─── Скачивание / Загрузка ───
   const download = () => {
+    const validationError = validateGameSettings(game);
+    if (validationError) {
+      alert(validationError);
+      return;
+    }
+
     const gameToSave = {
       ...game,
       metadata: {
@@ -341,11 +476,13 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
                   <input
                     placeholder="Заголовок ситуации"
                     value={currentQuestion.situation.title}
+                    maxLength={TEXT_LIMITS["situation.title"]}
                     onChange={(e) => updateField("situation", "title", e.target.value)}
                   />
                   <textarea
                     placeholder="Описание ситуации"
                     value={currentQuestion.situation.description}
+                    maxLength={TEXT_LIMITS["situation.description"]}
                     onChange={(e) => updateField("situation", "description", e.target.value)}
                     rows={3}
                   />
@@ -374,6 +511,7 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
                 <textarea
                   placeholder="Текст вопроса..."
                   value={currentQuestion.question}
+                  maxLength={TEXT_LIMITS.question}
                   onChange={(e) => updateField(null, "question", e.target.value)}
                   rows={4}
                   required
@@ -402,6 +540,7 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
                 <textarea
                   placeholder="Ответ..."
                   value={currentQuestion.answer}
+                  maxLength={TEXT_LIMITS.answer}
                   onChange={(e) => updateField(null, "answer", e.target.value)}
                   rows={3}
                   required
@@ -431,11 +570,13 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
                   <input
                     placeholder="Заголовок пояснения"
                     value={currentQuestion.explanation.title}
+                    maxLength={TEXT_LIMITS["explanation.title"]}
                     onChange={(e) => updateField("explanation", "title", e.target.value)}
                   />
                   <textarea
                     placeholder="Текст пояснения..."
                     value={currentQuestion.explanation.text}
+                    maxLength={TEXT_LIMITS["explanation.text"]}
                     onChange={(e) => updateField("explanation", "text", e.target.value)}
                     rows={4}
                   />
@@ -462,25 +603,80 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
               <section className="form-group settings">
                 <div>
                   <label>Время на ответ (сек):</label>
-                  <input
-                    type="number"
-                    min={5}
-                    max={180}
-                    value={currentQuestion.time}
-                    onChange={(e) => updateField(null, "time", e.target.value)}
-                  />
-                </div>
-                {game.gameMode !== "training" && (
-                  <div>
-                    <label>Стоимость (очки):</label>
+                  <div className="number-field">
                     <input
                       type="number"
-                      min={10}
-                      value={currentQuestion.price}
-                      onChange={(e) => updateField(null, "price", e.target.value)}
+                      min={NUMBER_LIMITS.time.min}
+                      max={NUMBER_LIMITS.time.max}
+                      step={NUMBER_LIMITS.time.step}
+                      inputMode="numeric"
+                      value={currentQuestion.time ?? ""}
+                      onChange={(e) => updateField(null, "time", e.target.value)}
+                      onBlur={() => normalizeNumberField("time")}
+                      aria-invalid={Boolean(fieldErrors.time)}
+                      aria-describedby={fieldErrors.time ? "time-field-error" : undefined}
                     />
+                    <div className="number-field-controls">
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        aria-label="Увеличить время"
+                        onClick={() => stepNumberField("time", NUMBER_LIMITS.time.step, NUMBER_LIMITS.time.fallback)}
+                      >
+                        <ChevronUp size={14} strokeWidth={2.5} />
+                      </button>
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        aria-label="Уменьшить время"
+                        onClick={() => stepNumberField("time", -NUMBER_LIMITS.time.step, NUMBER_LIMITS.time.fallback)}
+                      >
+                        <ChevronDown size={14} strokeWidth={2.5} />
+                      </button>
+                    </div>
                   </div>
-                )}
+                  {fieldErrors.time && (
+                    <p className="field-error" id="time-field-error">{fieldErrors.time}</p>
+                  )}
+                </div>
+                <div>
+                  <label>Стоимость (очки):</label>
+                  <div className="number-field">
+                    <input
+                      type="number"
+                      min={NUMBER_LIMITS.price.min}
+                      max={NUMBER_LIMITS.price.max}
+                      step={NUMBER_LIMITS.price.step}
+                      inputMode="numeric"
+                      value={currentQuestion.price ?? ""}
+                      onChange={(e) => updateField(null, "price", e.target.value)}
+                      onBlur={() => normalizeNumberField("price")}
+                      aria-invalid={Boolean(fieldErrors.price)}
+                      aria-describedby={fieldErrors.price ? "price-field-error" : undefined}
+                    />
+                    <div className="number-field-controls">
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        aria-label="Увеличить стоимость"
+                        onClick={() => stepNumberField("price", NUMBER_LIMITS.price.step, NUMBER_LIMITS.price.fallback)}
+                      >
+                        <ChevronUp size={14} strokeWidth={2.5} />
+                      </button>
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        aria-label="Уменьшить стоимость"
+                        onClick={() => stepNumberField("price", -NUMBER_LIMITS.price.step, NUMBER_LIMITS.price.fallback)}
+                      >
+                        <ChevronDown size={14} strokeWidth={2.5} />
+                      </button>
+                    </div>
+                  </div>
+                  {fieldErrors.price && (
+                    <p className="field-error" id="price-field-error">{fieldErrors.price}</p>
+                  )}
+                </div>
               </section>
             </div>
           ) : (

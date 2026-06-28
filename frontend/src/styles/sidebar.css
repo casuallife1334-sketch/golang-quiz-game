@@ -372,6 +372,10 @@
   display: none; /* Hidden on desktop */
 }
 
+.sidebar-close {
+  display: none;
+}
+
 .sidebar-content {
   display: flex;
   flex: 1;
@@ -386,27 +390,12 @@
 
 /* Responsive */
 @media (max-width: 640px) {
-  .sidebar {
-    width: 100%;
-    min-width: auto;
-    max-height: 100%;
-    border-left: none;
-    border-top: 1px solid var(--border);
-  }
-
   .sidebar-section {
     padding: 16px;
   }
 
   .room-code {
     font-size: 1.3rem;
-  }
-}
-
-@media (max-width: 640px) {
-  .sidebar-content {
-    display: block;
-    overflow-y: auto;
   }
 }
 

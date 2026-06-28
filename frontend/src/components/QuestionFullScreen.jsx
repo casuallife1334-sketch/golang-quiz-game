@@ -2,6 +2,12 @@ import { useState, useEffect } from "react";
 import ImageWithStatus from "./ImageWithStatus";
 import "../styles/question-fullscreen.css";
 
+const getQuestionTime = (question) => {
+  if (question?.time === "" || question?.time == null) return 0;
+  const time = Number(question.time);
+  return Number.isFinite(time) ? time : 30;
+};
+
 export default function QuestionFullScreen({
   question,
   categoryIndex,
@@ -14,7 +20,7 @@ export default function QuestionFullScreen({
 }) {
   const [step, setStep] = useState(0); // 0: ситуация, 1: вопрос с таймером, 2: ответ
   const [showAnswer, setShowAnswer] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(question?.time || 30);
+  const [timeLeft, setTimeLeft] = useState(getQuestionTime(question));
   const [isLowTime, setIsLowTime] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState(null); // null = никто
 
@@ -24,7 +30,7 @@ export default function QuestionFullScreen({
   useEffect(() => {
     setShowAnswer(false);
     setStep(0);
-    setTimeLeft(question?.time || 30);
+    setTimeLeft(getQuestionTime(question));
     setIsLowTime(false);
     setSelectedPlayer(null);
   }, [question]);
