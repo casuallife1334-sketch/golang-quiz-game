@@ -6,10 +6,16 @@
   z-index: 10000;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 40px 20px;
+}
+
+.game-end-screen::-webkit-scrollbar {
+  display: none;
 }
 
 /* Confetti Canvas */
@@ -160,6 +166,16 @@
   font-size: 1.55rem;
   font-weight: 800;
   color: white;
+  overflow: hidden;
+}
+
+.training-podium-avatar img,
+.player-avatar-large img,
+.player-avatar-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .training-podium-avatar.winner {
@@ -311,6 +327,7 @@
   color: white;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
+  overflow: hidden;
 }
 
 .player-avatar-large.winner {
@@ -392,45 +409,6 @@
   filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
 }
 
-.results-summary {
-  width: 100%;
-  max-width: 1100px;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 32px;
-  opacity: 0;
-}
-
-.results-summary.fade-in-up {
-  animation: fadeInUp 0.8s ease 0.15s forwards;
-}
-
-.summary-card {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 18px;
-  padding: 18px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  color: white;
-  backdrop-filter: blur(12px);
-}
-
-.summary-label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.72);
-}
-
-.summary-value {
-  font-size: 1.2rem;
-  font-weight: 800;
-}
-
 .podium-number {
   font-size: 2.5rem;
   font-weight: 800;
@@ -485,21 +463,11 @@
   padding: 0 6px 6px;
 }
 
-.results-list-header,
 .result-row {
   display: grid;
   grid-template-columns: 110px minmax(0, 1fr) 140px;
   align-items: center;
   gap: 16px;
-}
-
-.results-list-header {
-  padding: 0 26px 12px;
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
 }
 
 .result-row {
@@ -569,6 +537,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: white;
+  overflow: hidden;
 }
 
 .result-row.top-1 .player-avatar-small {
@@ -712,24 +681,84 @@
   }
 
   .podium {
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 8px;
     min-height: 0;
+    width: 100%;
+    padding: 12px 0 0;
   }
 
   .podium-place.first {
-    order: -1;
+    order: 0;
+  }
+
+  .podium-place {
+    flex: 1 1 0;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .podium-player {
+    max-width: 100%;
+    gap: 5px;
+  }
+
+  .player-avatar-large {
+    width: 54px;
+    height: 54px;
+    font-size: 1.25rem;
+    border-width: 2px;
+  }
+
+  .player-avatar-large.winner {
+    width: 66px;
+    height: 66px;
+    font-size: 1.55rem;
+    border-width: 3px;
+  }
+
+  .podium-player .player-name {
+    font-size: 0.74rem;
+    line-height: 1.15;
+  }
+
+  .podium-player .winner-name {
+    font-size: 0.82rem;
+  }
+
+  .podium-player .player-score {
+    font-size: 0.68rem;
+    line-height: 1.15;
   }
 
   .podium-block {
-    width: 100%;
-    max-width: 280px;
+    width: min(100%, 78px);
+    max-width: none;
+    gap: 4px;
+    border-radius: 10px 10px 0 0;
   }
 
-  .results-summary {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+  .podium-block.height-1 {
+    height: 132px;
+  }
+
+  .podium-block.height-2 {
+    height: 104px;
+  }
+
+  .podium-block.height-3 {
+    height: 86px;
+  }
+
+  .podium-medal svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .podium-number {
+    font-size: 1.55rem;
   }
 
   .results-list {
@@ -738,10 +767,6 @@
 
   .all-players-title {
     font-size: 1.4rem;
-  }
-
-  .results-list-header {
-    display: none;
   }
 
   .results-list-shell {
@@ -762,15 +787,5 @@
   .exit-button {
     width: 100%;
     padding: 18px;
-  }
-}
-
-@media (max-width: 520px) {
-  .results-summary {
-    grid-template-columns: 1fr;
-  }
-
-  .summary-card {
-    padding: 16px;
   }
 }

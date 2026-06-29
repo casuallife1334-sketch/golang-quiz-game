@@ -88,12 +88,6 @@ export default function QuestionFullScreen({
 
   const progress = question?.time > 0 ? 339 - (timeLeft / question.time) * 339 : 339;
 
-  const sortedPlayers = [...players].sort((a, b) => {
-    const scoreA = scores[a.id] || 0;
-    const scoreB = scores[b.id] || 0;
-    return scoreB - scoreA;
-  });
-
   return (
     <div className="question-fullscreen-overlay" onClick={onClose}>
       <div className="question-fullscreen" onClick={(e) => e.stopPropagation()}>

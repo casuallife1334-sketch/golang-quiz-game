@@ -8,7 +8,8 @@ test("migrateGame returns a safe default for invalid input", () => {
     title: "Новая игра",
     categories: [],
     gameMode: "training",
-    modeSettings: {}
+    modeSettings: {},
+    source: "constructor"
   });
 });
 
@@ -41,6 +42,7 @@ test("migrateGame normalizes legacy and partial question data", () => {
   assert.equal(result.title, "Demo");
   assert.equal(result.gameMode, "custom");
   assert.deepEqual(result.modeSettings, {});
+  assert.equal(result.source, "uploaded");
   assert.equal(result.categories[0].name, "Раздел");
 
   assert.deepEqual(result.categories[0].questions[0], {

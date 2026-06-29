@@ -22,13 +22,15 @@ function getAvatarColor(id) {
   return `hsl(${hue},70%,60%)`;
 }
 
-export default function TopPlayersReport({ scores, players }) {
-  if (!players || players.length === 0) {
+export default function TopPlayersReport({ scores, players, host }) {
+  const gamePlayers = (players || []).filter((player) => player.id !== host);
+
+  if (gamePlayers.length === 0) {
     return null;
   }
 
   // Сортируем игроков по счету
-  const sortedPlayers = [...players]
+  const sortedPlayers = gamePlayers
     .filter(p => (scores?.[p.id] || 0) > 0)
     .sort((a, b) => (scores[b.id] || 0) - (scores[a.id] || 0));
 

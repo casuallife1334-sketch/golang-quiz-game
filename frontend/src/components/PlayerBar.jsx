@@ -1,8 +1,9 @@
 export default function PlayerBar({ players, host }) {
+  const gamePlayers = (players || []).filter((player) => player.id !== host);
+
   return (
     <div className="players-bar">
-      {players.map((player) => {
-        const isHost = player.id === host;
+      {gamePlayers.map((player) => {
         const displayName =
           player.name || `User${String(player.id || "").slice(0, 4)}`;
         const initials = getInitials(displayName);
@@ -12,7 +13,7 @@ export default function PlayerBar({ players, host }) {
         return (
           <div
             key={player.id}
-            className={`player-item-card ${isHost ? "player-host" : ""}`}
+            className="player-item-card"
           >
             <div className="player-avatar-wrap">
               <div
@@ -47,8 +48,6 @@ export default function PlayerBar({ players, host }) {
                 ) : (
                   initials
                 )}
-
-                {isHost && <span className="player-host-badge">Host</span>}
               </div>
             </div>
 

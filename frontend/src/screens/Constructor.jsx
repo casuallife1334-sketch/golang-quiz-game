@@ -59,7 +59,7 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
   const [game, setGame] = useState(() => {
     try {
       const saved = localStorage.getItem("quiz-draft");
-      if (saved) return migrateGame(JSON.parse(saved));
+      if (saved) return { ...migrateGame(JSON.parse(saved)), source: "constructor" };
     } catch (e) {
       console.error("Ошибка загрузки черновика:", e);
     }
@@ -77,7 +77,8 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
           confettiCount: 200,
           errorDisplayTime: 3
         }
-      }
+      },
+      source: "constructor"
     };
   });
 
@@ -319,7 +320,7 @@ export default function Constructor({ goBack, setGame: onGameReady }) {
     reader.onload = (ev) => {
       try {
         const data = JSON.parse(ev.target.result);
-        const migrated = migrateGame(data);
+        const migrated = { ...migrateGame(data), source: "constructor" };
         setGame(migrated);
         setSelected(null);
       } catch (err) {

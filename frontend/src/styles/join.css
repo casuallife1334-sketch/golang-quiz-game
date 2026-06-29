@@ -97,26 +97,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.join-icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 72px;
-  height: 72px;
-  background: var(--gradient);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-accent);
-  color: white;
-  animation: iconPulse 2s ease-in-out infinite;
-}
-
-@keyframes iconPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  margin: 8px 0 28px;
 }
 
 .join-title {
@@ -508,11 +489,6 @@
 
   .join-header {
     margin-bottom: 24px;
-  }
-
-  .join-icon-wrapper {
-    width: 62px;
-    height: 62px;
   }
 
   .btn-join {

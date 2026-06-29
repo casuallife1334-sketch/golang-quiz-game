@@ -241,9 +241,6 @@ export default function Join() {
         </button>
 
         <div className="join-header">
-          <div className="join-icon-wrapper">
-            {isHost ? <User size={32} strokeWidth={2} /> : <Users size={32} strokeWidth={2} />}
-          </div>
           <h2 className="join-title">
             {isHost ? "Создать игру" : "Присоединиться"}
           </h2>
