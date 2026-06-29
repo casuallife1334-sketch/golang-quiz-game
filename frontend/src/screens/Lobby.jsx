@@ -4,7 +4,6 @@ import GameBoard from "../components/GameBoard";
 import PlayersPanel from "../components/PlayersPanel";
 import Sidebar from "../components/Sidebar";
 import Constructor from "./Constructor";
-import LoadGame from "./LoadGame";
 import ModeSelector from "../components/ModeSelector";
 import QuestionView from "../components/QuestionView";
 import Slideshow from "../components/Slideshow";
@@ -13,10 +12,12 @@ import GameEndScreen from "../components/GameEndScreen";
 import { socket } from "../socket/socket";
 import { soundManager } from "../utils/soundManager";
 import { canEndGame } from "../utils/permissions";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
 import { getUserProfile } from "../userProfile";
 import "../styles/lobby.css";
 import "../styles/training-fullscreen.css";
+
+const GAME_COUNTDOWN_DURATION_MS = 3650;
 
 function useMobileLayout() {
   const [isMobileLayout, setIsMobileLayout] = useState(() => {
@@ -63,9 +64,12 @@ function LobbyContent() {
   const [localGame, setLocalGame] = useState(null);
   const [screen, setScreen] = useState("menu");
   const [countdown, setCountdown] = useState(null);
+  const [countdownLaunch, setCountdownLaunch] = useState(null);
   const [showReport, setShowReport] = useState(false);
   const [selectedMode, setSelectedMode] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const countdownInProgressRef = useRef(false);
+  const autoStartKeyRef = useRef("");
   const isMobileLayout = useMobileLayout();
 
   const navigate = useNavigate();
@@ -212,40 +216,95 @@ function LobbyContent() {
       return;
     }
 
+    if (countdownInProgressRef.current) {
+      return;
+    }
+
+    countdownInProgressRef.current = true;
+    setScreen("countdown");
     setCountdown(3);
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev === 3) return 2;
-        if (prev === 2) return 1;
-        if (prev === 1) {
-          clearInterval(timer);
-          setTimeout(() => {
-            setCountdown("GO");
-            setTimeout(() => {
-              setScreen("playing");
-              setCountdown(null);
-              socket.emit("start-game", {
-                roomId,
-                game: gameToUse,
-                gameMode: modeToUse
-              });
-            }, 900);
-          }, 1000);
-          return 1;
-        }
-        return prev;
-      });
-    }, 1000);
+    setCountdownLaunch({
+      roomId,
+      game: gameToUse,
+      gameMode: modeToUse,
+      startedAt: Date.now(),
+      shouldStartGame: true
+    });
+    socket.emit("start-game-countdown", {
+      roomId,
+      durationMs: GAME_COUNTDOWN_DURATION_MS
+    });
   }, [isHost, localGame, game, roomId, selectedMode]);
 
   useEffect(() => {
-    if (localGame && !game && isHost && screen === "menu") {
-      const timer = setTimeout(() => {
-        startGameWithCountdown(localGame, selectedMode || "custom");
-      }, 500);
-      return () => clearTimeout(timer);
+    if (!countdownLaunch) {
+      return undefined;
     }
-  }, [localGame, isHost, screen, selectedMode, startGameWithCountdown]);
+
+    const timers = [
+      window.setTimeout(() => setCountdown(2), 1000),
+      window.setTimeout(() => setCountdown(1), 2000),
+      window.setTimeout(() => setCountdown("GO"), 3000),
+      window.setTimeout(() => {
+        setCountdown(null);
+        setCountdownLaunch(null);
+        countdownInProgressRef.current = false;
+        if (countdownLaunch.shouldStartGame) {
+          setScreen("playing");
+          socket.emit("start-game", {
+            roomId: countdownLaunch.roomId,
+            game: countdownLaunch.game,
+            gameMode: countdownLaunch.gameMode
+          });
+        } else {
+          setScreen("menu");
+        }
+      }, GAME_COUNTDOWN_DURATION_MS)
+    ];
+
+    return () => {
+      timers.forEach((timerId) => window.clearTimeout(timerId));
+    };
+  }, [countdownLaunch]);
+
+  useEffect(() => {
+    const handleGameCountdownStarted = (data) => {
+      if (!data?.roomId || data.roomId !== roomId) {
+        return;
+      }
+      if (data.hostId === socket.id || game) {
+        return;
+      }
+
+      countdownInProgressRef.current = true;
+      setScreen("countdown");
+      setCountdown(3);
+      setCountdownLaunch({
+        roomId: data.roomId,
+        game: null,
+        gameMode: selectedMode || gameMode || "custom",
+        startedAt: data.startedAt || Date.now(),
+        shouldStartGame: false
+      });
+    };
+
+    socket.on("game-countdown-started", handleGameCountdownStarted);
+    return () => socket.off("game-countdown-started", handleGameCountdownStarted);
+  }, [roomId, game, selectedMode, gameMode]);
+
+  useLayoutEffect(() => {
+    if (!localGame || game || !isHost || screen !== "menu") {
+      return;
+    }
+
+    const autoStartKey = `${roomId || "room"}:${selectedMode || "custom"}:${localGame?.title || "game"}`;
+    if (autoStartKeyRef.current === autoStartKey) {
+      return;
+    }
+
+    autoStartKeyRef.current = autoStartKey;
+    startGameWithCountdown(localGame, selectedMode || "custom");
+  }, [localGame, game, isHost, screen, selectedMode, roomId, startGameWithCountdown]);
 
   useEffect(() => {
     if (isMobileLayout && screen === "constructor") {
@@ -253,6 +312,19 @@ function LobbyContent() {
     }
   }, [isMobileLayout, screen]);
 const renderContent = () => {
+  if (countdown !== null || screen === "countdown") {
+    return (
+      <div className="countdown-overlay">
+        <div className={`countdown-number ${countdown === "GO" ? "go" : ""}`}>
+          {countdown === "GO" ? "GO!" : countdown || 3}
+        </div>
+        <p className="countdown-text">
+          {countdown === "GO" ? "Игра начинается!" : "Приготовьтесь..."}
+        </p>
+      </div>
+    );
+  }
+
   if (currentQuestion) {
     if (gameMode === "training") {
       return (
@@ -306,23 +378,11 @@ const renderContent = () => {
         speechStart={speechStart}
         questionSyncState={questionSyncState}
         questionIndex={currentQuestion.questionIndex ?? 0}
+        gameSource={(localGame || game)?.source}
         inline
       />
     );
   }
-
-    if (countdown !== null) {
-      return (
-        <div className="countdown-overlay">
-          <div className={`countdown-number ${countdown === "GO" ? "go" : ""}`}>
-            {countdown === "GO" ? "GO!" : countdown}
-          </div>
-          <p className="countdown-text">
-            {countdown === "GO" ? "Игра начинается!" : "Приготовьтесь..."}
-          </p>
-        </div>
-      );
-    }
 
     if (!localGame && !game) {
       return (
@@ -374,26 +434,9 @@ const renderContent = () => {
     }} />;
   }
 
-  if (screen === "load") {
-    return <LoadGame goBack={() => {
-      setSelectedMode(null);
-      setScreen("menu");
-    }} setGame={(newGame) => {
-      setLocalGame(newGame);
-      setScreen("menu");
-    }} selectedMode={selectedMode} />;
-  }
-
   if (isHost && screen === "mode-select") {
     return (
       <ModeSelector
-        onSelectMode={(mode) => {
-          setSelectedMode(mode);
-          setScreen("load");
-        }}
-        onSelectGame={(gameId, modeId) => {
-          console.log("Selected game:", gameId, "for mode:", modeId);
-        }}
         onReadyGameSelect={(gameData, modeId) => {
           setLocalGame(gameData);
           setSelectedMode(modeId);

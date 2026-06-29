@@ -1,6 +1,7 @@
 export default function PlayerList({ players = [], host }) {
+  const gamePlayers = players.filter((player) => player.id !== host);
 
-  if (!players.length) {
+  if (!gamePlayers.length) {
     return <div>Нет игроков</div>;
   }
 
@@ -8,11 +9,9 @@ export default function PlayerList({ players = [], host }) {
 
     <div className="players">
 
-      {players.map((p) => (
+      {gamePlayers.map((p) => (
 
         <div key={p.id} className="player">
-
-          {p.id === host && "👑 "}
 
           {p.name}
 

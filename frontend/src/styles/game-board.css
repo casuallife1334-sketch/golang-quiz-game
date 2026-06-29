@@ -4,11 +4,11 @@
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
-  padding: 24px;
-  min-height: min-content;
-  overflow: visible;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(8px, 1.2vw, 16px);
+  padding: clamp(10px, 1.8vw, 24px);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .game-board-empty {
@@ -36,7 +36,7 @@
 .category-column {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: clamp(6px, 1vw, 12px);
   min-width: 0;
   min-height: 0;
   animation: columnEntrance 0.5s ease backwards;
@@ -60,11 +60,11 @@
 }
 
 .category-header {
-  padding: 18px 16px;
+  padding: clamp(8px, 1.2vw, 18px) clamp(8px, 1vw, 16px);
   background: var(--gradient);
   border-radius: var(--radius-md);
   text-align: center;
-  min-height: 60px;
+  min-height: clamp(40px, 7vh, 60px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -88,20 +88,21 @@
 
 .category-name {
   color: white;
-  font-size: 0.85rem;
+  font-size: clamp(0.62rem, 0.9vw, 0.85rem);
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0;
   text-transform: uppercase;
   position: relative;
   z-index: 1;
-  line-height: 1.4;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 /* Questions Column */
 .questions-column {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: clamp(6px, 1vw, 12px);
   flex: 1;
   min-height: 0;
 }
@@ -109,7 +110,7 @@
 /* Question Cell */
 .question-cell {
   flex: 1;
-  min-height: 80px;
+  min-height: 0;
   background: var(--surface);
   backdrop-filter: var(--blur);
   border: 1px solid var(--border);
@@ -150,7 +151,7 @@
 
 /* Question Price */
 .question-price {
-  font-size: 1.1rem;
+  font-size: clamp(0.82rem, 1.3vw, 1.1rem);
   font-weight: 600;
   color: var(--accent-light);
   text-align: center;
@@ -162,7 +163,7 @@
   z-index: 1;
   transition: var(--transition-base);
   text-shadow: 0 0 20px rgba(var(--accent-rgb), 0.4);
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
 }
 
 .question-cell:hover:not(.used):not(.disabled) .question-price {

@@ -108,6 +108,12 @@
   min-width: 0;
   min-height: 0;
   overflow: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.game-area::-webkit-scrollbar {
+  display: none;
 }
 
 .board-wrapper {
@@ -119,6 +125,12 @@
   justify-content: center;
   background: transparent;
   overflow: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.board-wrapper::-webkit-scrollbar {
+  display: none;
 }
 
 /* Empty Board */
@@ -619,8 +631,22 @@
     display: none;
   }
 
+  .sidebar-section.chat-section {
+    display: none;
+  }
+
   .sidebar-section.active {
     display: block;
+  }
+
+  .sidebar-section.chat-section.active {
+    display: flex;
+    height: calc(min(70vh, 520px) - 54px);
+    padding: 0;
+  }
+
+  .sidebar-section.chat-section .chat-container {
+    min-height: 0;
   }
 
   /* Room info compact */

@@ -4,9 +4,12 @@ export function migrateGame(data, fallbackMode = "custom") {
       title: "Новая игра",
       categories: [],
       gameMode: fallbackMode,
-      modeSettings: {}
+      modeSettings: {},
+      source: "constructor"
     };
   }
+
+  const source = data.source || (data.metadata?.createdAt ? "constructor" : "uploaded");
 
   return {
     title: data.title || "Новая игра",
@@ -32,6 +35,7 @@ export function migrateGame(data, fallbackMode = "custom") {
       }))
     })),
     gameMode: data.gameMode || fallbackMode,
-    modeSettings: data.modeSettings || {}
+    modeSettings: data.modeSettings || {},
+    source
   };
 }

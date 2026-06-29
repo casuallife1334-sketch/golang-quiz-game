@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Trophy, Crown, Medal, Star, ArrowLeft, Users, Target, BarChart3 } from "lucide-react";
+import { Trophy, Crown, Medal, Star, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { soundManager } from "../utils/soundManager";
 import { buildLeaderboard } from "../utils/leaderboard";
@@ -14,10 +14,6 @@ export default function GameEndScreen({ players, scores, game, gameMode, trainin
 
   const leaderboard = buildLeaderboard(players, scores, host);
   const topThree = leaderboard.slice(0, 3);
-  const leaderScore = leaderboard[0]?.score || 0;
-  const totalPlayers = leaderboard.length;
-  const totalPoints = leaderboard.reduce((sum, player) => sum + player.score, 0);
-  const averageScore = totalPlayers > 0 ? Math.round(totalPoints / totalPlayers) : 0;
 
   // Анимация появления
   useEffect(() => {
@@ -150,6 +146,21 @@ export default function GameEndScreen({ players, scores, game, gameMode, trainin
       .slice(0, 2);
   };
 
+  const renderAvatar = (player, className) => {
+    const avatarUrl = player?.avatar && String(player.avatar).trim();
+    const displayName = player?.name || "Игрок";
+
+    return (
+      <div className={className}>
+        {avatarUrl ? (
+          <img src={avatarUrl} alt={displayName} />
+        ) : (
+          getInitials(displayName)
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="game-end-screen">
       {/* Конфетти канвас */}
@@ -170,40 +181,12 @@ export default function GameEndScreen({ players, scores, game, gameMode, trainin
             {game?.title || "Тема не указана"}
           </div>
         )}
-        {gameMode !== 'training' && (
-          <p className="game-end-subtitle">Поздравляем победителей!</p>
-        )}
         {gameMode === 'training' && (
           <p className="game-end-subtitle training-end-subtitle">
             Спасибо за участие в обучении!
           </p>
         )}
       </div>
-
-      {gameMode !== "training" && (
-        <div className={`results-summary ${animationPhase >= 2 ? "fade-in-up" : ""}`}>
-          <div className="summary-card">
-            <Trophy size={22} strokeWidth={2} />
-            <span className="summary-label">Лидер</span>
-            <strong className="summary-value">{topThree[0]?.name || "Нет данных"}</strong>
-          </div>
-          <div className="summary-card">
-            <Target size={22} strokeWidth={2} />
-            <span className="summary-label">Лучший счет</span>
-            <strong className="summary-value">{leaderScore} очков</strong>
-          </div>
-          <div className="summary-card">
-            <Users size={22} strokeWidth={2} />
-            <span className="summary-label">Игроков</span>
-            <strong className="summary-value">{totalPlayers}</strong>
-          </div>
-          <div className="summary-card">
-            <BarChart3 size={22} strokeWidth={2} />
-            <span className="summary-label">Средний счет</span>
-            <strong className="summary-value">{averageScore}</strong>
-          </div>
-        </div>
-      )}
 
       {/* Подиум топ-3 */}
       {topThree.length > 0 && (
@@ -222,9 +205,7 @@ export default function GameEndScreen({ players, scores, game, gameMode, trainin
                       <div className="training-podium-medal">{getMedalIcon(place)}</div>
                       <div className="training-podium-number">{place}</div>
                     </div>
-                    <div className={`training-podium-avatar ${isWinner ? "winner" : ""}`}>
-                      {getInitials(player.name)}
-                    </div>
+                    {renderAvatar(player, `training-podium-avatar ${isWinner ? "winner" : ""}`)}
                     <div className="training-podium-meta">
                       <div className={`training-podium-name ${isWinner ? "winner" : ""}`}>
                         {player.name || "Игрок"}
@@ -243,9 +224,7 @@ export default function GameEndScreen({ players, scores, game, gameMode, trainin
               {topThree[1] && (
                 <div className="podium-place second">
                   <div className="podium-player">
-                    <div className="player-avatar-large">
-                      {getInitials(topThree[1].name)}
-                    </div>
+                    {renderAvatar(topThree[1], "player-avatar-large")}
                     <div className="player-name">{topThree[1].name || "Игрок"}</div>
                     <div className="player-score">{topThree[1].score} очков</div>
                   </div>
@@ -262,9 +241,7 @@ export default function GameEndScreen({ players, scores, game, gameMode, trainin
               {topThree[0] && (
                 <div className="podium-place first">
                   <div className="podium-player">
-                    <div className="player-avatar-large winner">
-                      {getInitials(topThree[0].name)}
-                    </div>
+                    {renderAvatar(topThree[0], "player-avatar-large winner")}
                     <div className="player-name winner-name">{topThree[0].name || "Игрок"}</div>
                     <div className="player-score winner-score">{topThree[0].score} очков</div>
                   </div>
@@ -281,9 +258,7 @@ export default function GameEndScreen({ players, scores, game, gameMode, trainin
               {topThree[2] && (
                 <div className="podium-place third">
                   <div className="podium-player">
-                    <div className="player-avatar-large">
-                      {getInitials(topThree[2].name)}
-                    </div>
+                    {renderAvatar(topThree[2], "player-avatar-large")}
                     <div className="player-name">{topThree[2].name || "Игрок"}</div>
                     <div className="player-score">{topThree[2].score} очков</div>
                   </div>
@@ -303,18 +278,12 @@ export default function GameEndScreen({ players, scores, game, gameMode, trainin
       {leaderboard.length > 0 && (
         <div className={`all-players-section ${animationPhase >= 3 ? "fade-in-up" : ""}`}>
           <h2 className="all-players-title">
-            <Trophy size={24} strokeWidth={2} />
-            {gameMode === "training" ? "Все участники" : "Все участники и итоговая таблица"}
+            Все участники
           </h2>
           <div className="all-players-count">
             Показано участников: {leaderboard.length}
           </div>
           <div className="results-list-shell">
-            <div className="results-list-header">
-              <span>Место</span>
-              <span>Игрок</span>
-              <span>Очки</span>
-            </div>
             <div className="results-list">
               {leaderboard.map((player, index) => (
                 <div
@@ -329,9 +298,7 @@ export default function GameEndScreen({ players, scores, game, gameMode, trainin
                     ) : <span className="rank-number">{player.rank}</span>}
                   </div>
                   <div className="result-player">
-                    <div className="player-avatar-small">
-                      {getInitials(player.name)}
-                    </div>
+                    {renderAvatar(player, "player-avatar-small")}
                     <div className="result-player-meta">
                       <div className="player-name">{player.name || "Игрок"}</div>
                       <div className="result-player-place">{player.rank} место</div>

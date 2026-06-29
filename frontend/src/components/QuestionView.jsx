@@ -43,7 +43,7 @@ function clearAnswerDraft(playerId, categoryIndex, questionIndex) {
 export default function QuestionView({
   question, categoryIndex, price, players, scores,
   onClose, isHost, playerId, timerStart, timerDuration,
-  speechStart, questionIndex, questionSyncState, inline = false
+  speechStart, questionIndex, questionSyncState, gameSource, inline = false
 }) {
   const { setTimerStart, host } = useRoom();
   const [step, setStep] = useState('answering');
@@ -55,7 +55,6 @@ export default function QuestionView({
   const [hasAttempted, setHasAttempted] = useState(false);
   const [selfLockedOut, setSelfLockedOut] = useState(false);
   const [showIncorrectNotice, setShowIncorrectNotice] = useState(false);
-  const [speaking, setSpeaking] = useState(false);
   const [wantsToAnswer, setWantsToAnswer] = useState(false);
   const [pendingAnswer, setPendingAnswer] = useState(null);
   const [answerResult, setAnswerResult] = useState(null);
@@ -148,7 +147,6 @@ export default function QuestionView({
     setHasAttempted(false);
     setSelfLockedOut(false);
     setShowIncorrectNotice(false);
-    setSpeaking(false);
     setWantsToAnswer(false);
     setPendingAnswer(null);
     setAnswerResult(null);
@@ -185,16 +183,6 @@ export default function QuestionView({
     return () => clearInterval(interval);
   }, [timerStart, timerDuration, step, pendingAnswer]);
 
-  // Авто-закрытие для ведущего после показа ответа
-  useEffect(() => {
-    if (step === 'revealed' && isHost) {
-      const timer = setTimeout(() => {
-        onClose(selectedPlayer);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [step, isHost, selectedPlayer, onClose]);
-
   // Фокус на поле ввода
   useEffect(() => {
     if (step === 'answering' && wantsToAnswer && answerInputRef.current) {
@@ -206,18 +194,14 @@ export default function QuestionView({
   useEffect(() => {
     if (!question?.question) return;
     try { window.speechSynthesis.cancel(); } catch {}
-    setSpeaking(false);
     const startAt = speechStart || Date.now();
     const t = setTimeout(() => {
       if (!question?.question) return;
-      setSpeaking(true);
       try {
         const u = new SpeechSynthesisUtterance(question.question);
         u.lang = "ru-RU"; u.rate = 1.0;
-        u.onend = () => setSpeaking(false);
-        u.onerror = () => setSpeaking(false);
         window.speechSynthesis.speak(u);
-      } catch { setSpeaking(false); }
+      } catch {}
     }, Math.max(0, startAt - Date.now()));
     return () => clearTimeout(t);
   }, [question?.question, speechStart]);
@@ -436,7 +420,10 @@ export default function QuestionView({
   const formatTime = (s) => s.toString().padStart(2, "0");
   const progress = timerDuration > 0 ? 339 - (timeLeft / timerDuration) * 339 : 339;
   const activeAnswererName = pendingAnswer?.playerName || players.find(p => p.id === activeAnswerer)?.name || "Игрок";
+  const isConstructorGame = gameSource === "constructor";
+  const showConstructorResult = isConstructorGame && answerResult && answerResult.answer;
   const visibleSubmittedAnswer = pendingAnswer || (answerResult?.isCorrect ? answerResult : null);
+  const revealedImage = question.answerImage || explanation.image;
 
   if (!question) {
     return (
@@ -449,8 +436,7 @@ export default function QuestionView({
   }
 
   return (
-    <div className={`question-view-container ${inline ? "qv-inline" : ""}`}
-      onClick={() => { if (step === "revealed") onClose(selectedPlayer); }}>
+    <div className={`question-view-container ${inline ? "qv-inline" : ""}`}>
       <div className="qv-content" onClick={(e) => e.stopPropagation()}>
         <div className="qv-header-simple"><div className="qv-price">{price || 100} очков</div></div>
         <div className="qv-body">
@@ -477,6 +463,14 @@ export default function QuestionView({
 
               <div className="qv-main">
                 <h2 className="qv-title">{question?.question}</h2>
+
+                {questionImage && (
+                  <div className="qv-mobile-question-media">
+                    <div className="qv-image">
+                      <ImageWithStatus src={questionImage} alt="Вопрос" loading="lazy" />
+                    </div>
+                  </div>
+                )}
 
                 <div className={`qv-timer ${isLowTime ? "urgent" : ""}`}>
                   <svg className="qv-timer-ring" viewBox="0 0 120 120">
@@ -562,23 +556,42 @@ export default function QuestionView({
           )}
 
 {step === 'revealed' && (
-            <div className="qv-section fade-in">
+            <div className={`qv-section qv-revealed-section fade-in ${!isHost ? "qv-revealed-no-actions" : ""}`}>
               <div className="revealed-content">
-              {question.answerImage || explanation.image ? (
+              {revealedImage ? (
                 <div className="qv-image">
-                  <ImageWithStatus src={question.answerImage || explanation.image} alt="Ответ" loading="lazy" />
+                  <ImageWithStatus src={revealedImage} alt="Правильный ответ" loading="lazy" />
                 </div>
               ) : null}
                 <div className="revealed-main">
-                  <h2 className="qv-title">{explanation.title || "Ответ"}</h2>
-                  {visibleSubmittedAnswer && (
+                  {showConstructorResult && (
+                    <div className={`player-answer-status revealed-answer-status constructor-result ${answerResult.isCorrect ? "correct" : "incorrect"}`}>
+                      <div className="result-icon" aria-hidden="true">{answerResult.isCorrect ? "🎉" : "😞"}</div>
+                      <p className="player-answer-status-title">
+                        {answerResult.playerName || activeAnswererName} отвечает {answerResult.isCorrect ? "верно" : "неверно"}
+                      </p>
+                      <div className="answer-comparison">
+                        <div className="answer-comparison-item submitted">
+                          <span>Ответ игрока</span>
+                          <strong>{answerResult.answer}</strong>
+                        </div>
+                        {question.answer && (
+                          <div className="answer-comparison-item correct">
+                            <span>Правильный ответ</span>
+                            <strong>{question.answer}</strong>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {visibleSubmittedAnswer && !showConstructorResult && (
                     <div className={`player-answer-status revealed-answer-status ${answerResult?.isCorrect ? "correct" : ""}`}>
                       <p className="player-answer-status-title">{visibleSubmittedAnswer.playerName || activeAnswererName} ответил</p>
                       <div className="player-answer-status-text">{visibleSubmittedAnswer.answer}</div>
                       {answerResult?.isCorrect && <p className="player-answer-status-result">Ответ верный</p>}
                     </div>
                   )}
-                  {question.answer && (
+                  {question.answer && !showConstructorResult && (
                     <div className="qv-answer">
                       <span className="qv-answer-label">Правильный ответ</span>
                       <div className="qv-answer-text">{question.answer}</div>
@@ -588,12 +601,6 @@ export default function QuestionView({
                     <div className="qv-explanation">
                       <span className="qv-explanation-label">Пояснение</span>
                       <p className="qv-text">{explanation.text}</p>
-                    </div>
-                  )}
-                  {selectedPlayer && (
-                    <div className="correct-answer-indicator fade-in">
-                      <span className="cai-icon">🎉</span>
-                      <span className="cai-text">{players.find(p => p.id === selectedPlayer)?.name || "Игрок"} отвечает правильно!</span>
                     </div>
                   )}
                 </div>
@@ -609,13 +616,6 @@ export default function QuestionView({
         </div>
       </div>
 
-      {step === 'revealed' && isHost && (
-        <button className="qv-close-btn" onClick={() => onClose(selectedPlayer)}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
-        </button>
-      )}
     </div>
   );
 }
